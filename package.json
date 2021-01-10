@@ -1,0 +1,46 @@
+{
+    "name": "name",
+    "version": "0.1.0",
+    "private": true,
+    "scripts": {
+        "serve": "vue-cli-service serve",
+        "build": "vue-cli-service build",
+        "lint": "vue-cli-service lint"
+    },
+    "dependencies": {
+        "core-js": "^3.7.0",
+        "vue": "^3.0.2"
+    },
+    "devDependencies": {
+        "@types/ts-nameof": "^4.2.1",
+        "@typescript-eslint/eslint-plugin": "^4.6.1",
+        "@typescript-eslint/parser": "^4.7.0",
+        "@vue/cli": "^4.5.9",
+        "@vue/cli-plugin-babel": "^4.5.9",
+        "@vue/cli-plugin-eslint": "^4.5.9",
+        "@vue/cli-plugin-typescript": "^4.5.9",
+        "@vue/cli-service": "^4.5.9",
+        "@vue/compiler-sfc": "^3.0.2",
+        "@vue/eslint-config-prettier": "^6.0.0",
+        "@vue/eslint-config-typescript": "^7.0.0",
+        "autoprefixer": "^9.8.6",
+        "eslint": "^7.14.0",
+        "eslint-plugin-prettier": "^3.1.4",
+        "eslint-plugin-vue": "^7.1.0",
+        "eslint-webpack-plugin": "^2.4.0",
+        "node-sass": "^5.0.0",
+        "postcss": "^7.0.35",
+        "prettier": "^2.1.2",
+        "reflect-metadata": "^0.1.13",
+        "sass-loader": "^10.0.5",
+        "tailwindcss": "npm:@tailwindcss/postcss7-compat@^2.0.1",
+        "ts-debounce": "^2.1.0",
+        "ts-nameof": "^5.0.0",
+        "ts-nameof-loader": "^1.0.2",
+        "typescript": "^4.1.2",
+        "v-click-outside": "^3.1.2",
+        "vue-class-component": "^8.0.0-rc.1",
+        "vue-currency-input": "^2.0.0-beta.0",
+        "vue-property-decorator": "^9.1.2"
+    }
+}
