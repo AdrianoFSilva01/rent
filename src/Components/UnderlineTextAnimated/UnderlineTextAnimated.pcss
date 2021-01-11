@@ -1,0 +1,26 @@
+.underline-text-animated {
+    @apply relative;
+
+    p,
+    hr {
+        @apply transition-all transform duration-300;
+    }
+
+    p {
+        @apply translate-y-0;
+    }
+
+    hr {
+        @apply absolute w-0 right-0;
+    }
+
+    &:hover {
+        p {
+            @apply -translate-y-1;
+        }
+
+        hr {
+            @apply w-full left-0;
+        }
+    }
+}
