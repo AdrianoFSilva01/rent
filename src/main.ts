@@ -1,5 +1,4 @@
 import "@/Assets/base.pcss";
-import InstallComponents from "@/Components/BaseComponents/base-component";
 import { DirectiveBinding } from "@vue/runtime-core";
 import "reflect-metadata";
 import { App, ComponentPublicInstance, createApp } from "vue";
@@ -29,5 +28,4 @@ app.directive("focus", {
 app.directive("click-outside", clickOutside);
 app.directive("scroll-outside", scrollOutside);
 
-InstallComponents(app);
 app.mount("#app");
