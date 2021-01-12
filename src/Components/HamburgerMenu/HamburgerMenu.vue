@@ -6,12 +6,6 @@
     </div>
 </template>
 
-<script>
-import { Vue } from "vue-class-component";
-
-export default class HamburgerMenu extends Vue{
-
-}
-</script>
+<script lang="ts" src="./HamburgetMenu.ts" />
 
 <style scoped lang="postcss" src="./HamburgerMenu.pcss" />
