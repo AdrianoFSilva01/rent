@@ -25,6 +25,17 @@ app.directive("focus", {
     }
 });
 
+app.directive("first-hover", {
+    beforeMount: function (el: HTMLElement, binding: DirectiveBinding): void {
+        const firstHoverHandler = (): void => {
+            el.classList.add(binding.value);
+            el.removeEventListener("mouseover", firstHoverHandler);
+        }
+
+        el.addEventListener("mouseover", firstHoverHandler);
+    }
+});
+
 app.directive("click-outside", clickOutside);
 app.directive("scroll-outside", scrollOutside);
 
