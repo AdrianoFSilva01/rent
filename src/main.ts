@@ -15,6 +15,8 @@ app.config.warnHandler = (msg: string, instance: ComponentPublicInstance | null,
     }
 };
 
+// Separar diretivas para um ficheiro aparte
+
 app.directive("focus", {
     mounted: function (el: HTMLElement, binding: DirectiveBinding): void {
         if (binding.value === undefined || binding.value === true) {
@@ -35,6 +37,19 @@ app.directive("first-hover", {
         el.addEventListener("mouseover", firstHoverHandler);
     }
 });
+
+app.mixin({
+    created(): void {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const enums: any = this.$options.enums;
+        if(enums) {
+            for (const name of Object.keys(enums)) {
+                this[name] = Object.freeze(enums[name]);
+                console.log(enums[name]);
+            }
+        }
+    }
+})
 
 app.directive("click-outside", clickOutside);
 app.directive("scroll-outside", scrollOutside);

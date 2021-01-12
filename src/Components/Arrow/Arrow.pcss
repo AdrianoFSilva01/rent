@@ -1,0 +1,39 @@
+.arrow {
+    @apply absolute flex h-16 w-16 items-center cursor-pointer;
+
+    hr {
+        @apply absolute border-black;
+
+        &:first-child,
+        &:last-child {
+            @apply transition-all duration-main w-3 transform;
+        }
+
+        &:first-child {
+            @apply rotate-45 origin-bottom-left;
+        }
+
+        &:nth-child(2) {
+            @apply transition-all duration-main w-11;
+        }
+
+        &:last-child {
+            @apply -rotate-45 origin-top-left;
+        }
+    }
+
+    &:hover {
+        hr {
+            @apply border-yellow-200;
+
+            &:first-child,
+            &:last-child {
+                @apply w-2;
+            }
+
+            &:nth-child(2) {
+                @apply w-14;
+            }
+        }
+    }
+}
