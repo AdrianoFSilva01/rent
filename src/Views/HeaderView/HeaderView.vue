@@ -16,23 +16,7 @@
     </div>
 </template>
 
-<script>
-import { Options, Vue } from "vue-class-component";
-import HamburgerMenu from "@/Components/HamburgerMenu/HamburgerMenu.vue";
-import UnderlineTextAnimated from "@/Components/UnderlineTextAnimated/UnderlineTextAnimated.vue";
-import WaveButton from "@/Components/WaveButton/WaveButton.vue";
-
-@Options({
-    components:{
-        HamburgerMenu,
-        UnderlineTextAnimated,
-        WaveButton
-    }
-})
-export default class HeaderView extends Vue {
-
-}
-</script>
+<script lang="ts" src="./HeaderView.ts" />
 
 <style scoped lang="postcss">
 </style>
