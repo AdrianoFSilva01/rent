@@ -1,11 +1,11 @@
 <!-- prettier-ignore -->
 <template>
-    <div></div>
+    <Header class="my-10" />
 </template>
 
 <script>
 import { Vue, Options } from "vue-class-component";
-import Header from "@/Views/HeaderView.vue";
+import Header from "@/Views/HeaderView/HeaderView.vue";
 
 @Options({
     components: {
