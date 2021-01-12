@@ -7,13 +7,6 @@
     </div>
 </template>
 
-<script lang="ts">
-import { Vue } from "vue-class-component";
-import { Prop } from "vue-property-decorator";
-
-export default class UnderlineTextAnimated extends Vue{
-    @Prop() text: string | null = null;
-}
-</script>
+<script lang="ts" src="./UnderlineTextAnimated.ts" />
 
 <style scoped lang="postcss" src="./UnderlineTextAnimated.pcss" />
