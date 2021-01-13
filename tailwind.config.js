@@ -7,8 +7,12 @@ module.exports = {
             colors: {
                 ...colors,
             },
+            height: {
+                180: "45rem"
+            },
             transitionDuration: {
                 400: "400ms",
+                2000 : "2000ms",
                 "main": "var(--transition-duration-main)"
             },
             animation: {
