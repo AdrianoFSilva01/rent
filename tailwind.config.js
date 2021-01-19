@@ -6,6 +6,7 @@ module.exports = {
         extend: {
             colors: {
                 ...colors,
+                gold: "#d6a159"
             },
             height: {
                 180: "45rem"

@@ -1,0 +1,47 @@
+.day-grid {
+    @apply grid grid-cols-7 grid-rows-6 gap-px bg-gray-200;
+
+    span {
+        @apply text-center py-2 bg-white text-black box-border border border-transparent opacity-50;
+    }
+
+    .days {
+        @apply cursor-pointer opacity-100;
+
+        &.previous-month-days,
+        &.next-month-days {
+            @apply opacity-50;
+        }
+
+        &:nth-child(7n + 1):not(.selected-day),
+        &:nth-child(7n):not(.selected-day) {
+            @apply text-gold;
+        }
+
+        &:hover:not(.selected-day) {
+            @apply border-gold text-gold opacity-100;
+        }
+    }
+
+    .selected-day {
+        @apply bg-gold text-black;
+    }
+}
+
+.arrow-button {
+    @apply flex items-center justify-center h-10 w-10;
+
+    &:hover:not(:disabled) {
+        hr {
+            @apply border-gold;
+        }
+    }
+
+    &:disabled {
+        @apply cursor-not-allowed opacity-50;
+    }
+
+    &:focus {
+        @apply outline-none;
+    }
+}
