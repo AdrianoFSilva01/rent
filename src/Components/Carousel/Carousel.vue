@@ -1,7 +1,9 @@
 <template>
-    <transition name="fade" @after-leave="transitionEnded = true">
-        <img class="absolute top-0 transition duration-2000 opacity-100 object-cover h-full w-full" :src="image" :key="image" />
-    </transition>
+    <div>
+        <transition name="fade" @after-leave="transitionEnded = true">
+            <img class="absolute top-0 transition duration-2000 opacity-100 object-cover h-full w-full" :src="images[index]" :key="index" />
+        </transition>
+    </div>
 </template>
 
 <script lang="ts" src="./Carousel.ts" />
