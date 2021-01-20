@@ -1,70 +1,40 @@
+import DateTime from "@/Extensions/Types/DateTime/DateTime";
+import WeekDays from "@/Extensions/Types/DateTime/WeekDays";
 import { Options, Vue } from "vue-class-component";
-import { ModelSync, Prop } from "vue-property-decorator";
+import { ModelSync, Prop, Watch } from "vue-property-decorator";
 
 @Options({
-    emits: ["update:modelValue", "selected-day"]
+    emits: ["update:modelValue", "selected-day"],
+    enums: {
+        WeekDays
+    }
 })
-export default class Arrow extends Vue{
-    @Prop() startDate: Date | null = null;
-    currentDate: Date = new Date();
-    @ModelSync("modelValue", "update:modelValue") selectedDay: Date | null = null;
-    disablePreviousButton: boolean = false;
-    months: Array<string> = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-    weekDays: Array<string> = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
+export default class DatePicker extends Vue{
+    @ModelSync("modelValue", "update:modelValue") selectedDay!: DateTime;
+    @Prop() startDate: DateTime | null = null;
+
+    currentDate: DateTime = new DateTime();
 
     created(): void {
-        this.currentDate = this.startDate ? new Date(this.startDate) : this.currentDate;
+        this.currentDate = this.startDate ? DateTime.fromDate(this.startDate) : this.currentDate;
     }
 
-    get datesToDisplay(): Array<Date> {
-        const startDate: Date = this.getStartDate(this.currentDate);
-        const endDate: Date = this.getEndDate(startDate);
-
-        return this.getCalendar(startDate, endDate);
+    onSelectedDay(selectedDay: DateTime): void {
+        this.currentDate = DateTime.fromDate(selectedDay);
+        this.selectedDay = DateTime.fromDate(selectedDay);
+        this.$emit("selected-day", DateTime.fromDate(selectedDay));
     }
 
-    getStartDate(starDate: Date): Date {
-        const date: Date = new Date(starDate.setDate(1));
-        date.setDate(1 - date.getDay());
-        return date;
+    @Watch(nameof((datePicker: DatePicker) => datePicker.startDate))
+    onStartDateChanged(): void {
+        this.currentDate = this.startDate ?? this.currentDate;
     }
 
-    getEndDate(startDate: Date): Date {
-        const date: Date = new Date(startDate);
-        date.setDate(startDate.getDate() + 6 * 7 - 1);
-        return date;
-    }
-
-    getCalendar(starDate: Date, endDate: Date): Array<Date> {
-        const dateArray: Array<Date> = [];
-
-        while(starDate <= endDate) {
-            dateArray.push(new Date(starDate));
-            starDate.setDate(starDate.getDate() + 1);
-        }
-
+    get previousButton(): boolean {
         if (this.startDate) {
-            this.disablePreviousButton = dateArray[0] < new Date(this.startDate.toDateString());
+            return this.startDate > this.currentDate.fullMonthWeeks[0];
+        } else {
+            return false;
         }
-
-        return dateArray;
-    }
-
-    previousMonth(): void {
-        const date: Date = new Date(this.currentDate);
-        date.setMonth(date.getMonth() - 1, 1);
-        this.currentDate = date;
-    }
-
-    nextMonth(): void {
-        const date: Date = new Date(this.currentDate);
-        date.setMonth(date.getMonth() + 1, 1);
-        this.currentDate = date;
-    }
-
-    onSelectedDay(selectedDay: Date): void {
-        this.selectedDay = new Date(selectedDay);
-        this.currentDate = new Date(selectedDay);
-        this.$emit("selected-day", new Date(selectedDay));
     }
 }
