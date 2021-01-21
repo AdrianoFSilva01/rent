@@ -5,17 +5,19 @@ export default class DateTime {
     private _date: Date;
     private _fullMonthWeeks: Array<DateTime> = [];
 
-    constructor(day?: number, month?: number, year?: number) {
-        if(day && month && year) {
-            this._date = new Date(year, month - 1, day);
+    constructor();
+    constructor(dateTime: DateTime);
+    constructor(day?: number, month?: number, year?: number)
+    constructor(prop1?: unknown, prop2?: number, prop3?: number) {
+        if (prop1 instanceof DateTime) {
+            this._date = new Date(prop1.Year, prop1.Month - 1, prop1.Day);
+        }
+        else if(typeof prop1 === "number" && prop2 && prop3) {
+            this._date = new Date(prop3, prop2 - 1, prop1);
         } else {
             this._date = new Date();
         }
         this._date.setHours(0,0,0,0);
-    }
-
-    static fromDate(dateTime: DateTime): DateTime {
-        return new DateTime(dateTime.Day, dateTime.Month, dateTime.Year);
     }
 
     get Day(): number {
@@ -98,24 +100,28 @@ export default class DateTime {
     }
 
     getStartDate(startDate: DateTime): DateTime {
-        const date: DateTime = DateTime.fromDate(startDate);
+        const date: DateTime = new DateTime(startDate);
         date.firstDay().previousDay(date.WeekDay);
         return date;
     }
 
     getEndDate(startDate: DateTime): DateTime {
-        return DateTime.fromDate(startDate).nextDay(6 * 7 - 1);
+        return new DateTime(startDate).nextDay(6 * 7 - 1);
     }
 
     getCalendar(startDate: DateTime, endDate: DateTime): Array<DateTime> {
         const dateArray: Array<DateTime> = [];
 
         while(startDate <= endDate) {
-            dateArray.push(DateTime.fromDate(startDate));
+            dateArray.push(new DateTime(startDate));
             startDate.nextDay();
         }
 
         return dateArray;
+    }
+
+    toString(): string {
+        return `${this.Day}-${this.Month}-${this.Year}`;
     }
 
     equals(dateTime: DateTime): boolean {
