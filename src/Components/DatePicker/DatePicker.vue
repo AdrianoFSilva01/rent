@@ -1,5 +1,5 @@
 <template>
-    <div class="bg-white text-sm">
+    <div class="bg-white text-sm absolute bottom-9 w-full">
         <div class="w-full flex items-center justify-between">
             <button class="arrow-button" @click.stop="currentDate.previousMonth" :disabled="previousButton">
                 <div class="relative w-3">
