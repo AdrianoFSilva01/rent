@@ -48,6 +48,7 @@ export default class DateTime {
         if (!this._fullMonthWeeks.length) {
             this.loadMonth();
         }
+
         return this._fullMonthWeeks;
     }
 
