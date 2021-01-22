@@ -11,10 +11,12 @@
             </div>
             <slot />
         </div>
-        <div v-show="showComponent">
+        <div ref="component" class="component">
             <slot name="component" />
         </div>
     </div>
 </template>
 
 <script lang="ts" src="./Dropdown.ts" />
+
+<style scoped lang="postcss" src="./Dropdown.pcss" />
