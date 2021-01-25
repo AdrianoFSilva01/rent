@@ -30,6 +30,14 @@
 .arrow-button {
     @apply flex items-center justify-center h-10 w-10;
 
+    .arrow {
+        @apply relative w-3;
+
+        hr {
+            @apply absolute border-black;
+        }
+    }
+
     &:hover:not(:disabled) {
         hr {
             @apply border-gold;

@@ -2,10 +2,10 @@
     <div class="bg-white text-sm border border-gray-400">
         <div class="w-full flex items-center justify-between">
             <button class="arrow-button" @click.stop="currentDate.previousMonth" :disabled="previousButton">
-                <div class="relative w-3">
-                    <hr class="absolute border-black w-2 transform rotate-45 origin-bottom-left" />
-                    <hr class="absolute border-black w-3" />
-                    <hr class="absolute border-black w-2 transform -rotate-45 origin-top-left" />
+                <div class="arrow">
+                    <hr class="w-2 transform rotate-45 origin-bottom-left" />
+                    <hr class="w-3" />
+                    <hr class="w-2 transform -rotate-45 origin-top-left" />
                 </div>
             </button>
             <div class="space-x-1">
@@ -17,10 +17,10 @@
                 </span>
             </div>
             <button class="arrow-button" @click.stop="currentDate.nextMonth">
-                <div class="relative w-3 transform rotate-180">
-                    <hr class="absolute border-black w-2 transform rotate-45 origin-bottom-left" />
-                    <hr class="absolute border-black w-3" />
-                    <hr class="absolute border-black w-2 transform -rotate-45 origin-top-left" />
+                <div class="arrow transform rotate-180">
+                    <hr class="w-2 transform rotate-45 origin-bottom-left" />
+                    <hr class="w-3" />
+                    <hr class="w-2 transform -rotate-45 origin-top-left" />
                 </div>
             </button>
         </div>
