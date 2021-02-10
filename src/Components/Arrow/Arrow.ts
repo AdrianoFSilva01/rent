@@ -5,6 +5,7 @@ import ArrowDirection from "./ArrowDirection";
 export default class Arrow extends Vue{
     @Ref() arrow: HTMLElement | undefined;
     @Prop({default: undefined}) direction: ArrowDirection | undefined;
+    @Prop() disableButton: boolean = false;
 
     mounted(): void {
         if(this.direction) {

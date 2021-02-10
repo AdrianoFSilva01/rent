@@ -1,11 +1,9 @@
 <template>
-    <div>
-        <transition name="fade" @after-leave="transitionEnded = true">
-            <img class="absolute top-0 transition duration-2000 opacity-100 object-cover h-full w-full" :src="images[index]" :key="index" />
-        </transition>
+    <div ref="relativeElement" class="relative">
+        <div ref="absoluteElement" class="flex absolute h-full transform" style="cursor: grab" :onmousedown="onClick">
+            <slot />
+        </div>
     </div>
 </template>
 
 <script lang="ts" src="./Carousel.ts" />
-
-<style scoped lang="postcss" src="./Carousel.pcss" />

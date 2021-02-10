@@ -9,3 +9,21 @@
         @apply relative border-b border-black pb-2;
     }
 }
+
+.overlay {
+    @apply absolute w-full h-full transition-colors duration-main;
+
+    &:before {
+        @apply absolute top-1/2 left-0 w-full h-1/2 bg-gradient-to-b from-transparent to-black opacity-75;
+        content: "";
+    }
+
+    &:hover {
+        @apply bg-gold bg-opacity-50;
+
+        &:after {
+            @apply absolute flex w-full h-full top-0 left-0 justify-center items-center text-5xl;
+            content: "+";
+        }
+    }
+}

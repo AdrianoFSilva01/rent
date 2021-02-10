@@ -1,9 +1,9 @@
 <template>
-    <div ref="arrow" class="arrow">
+    <button ref="arrow" class="arrow" :disabled="disableButton">
         <hr />
         <hr />
         <hr />
-    </div>
+    </button>
 </template>
 
 <script lang="ts" src="./Arrow.ts" />

@@ -9,7 +9,11 @@ module.exports = {
                 gold: "#d6a159"
             },
             height: {
+                172: "43rem",
                 180: "45rem"
+            },
+            width: {
+                124: "31rem"
             },
             transitionDuration: {
                 400: "400ms",
@@ -56,6 +60,11 @@ module.exports = {
         }
     },
     purge: ["./public/**/*.html", "./src/**/*.vue"],
-    variants: {},
+    variants: {
+        extend: {
+            opacity: ['first'],
+            margin: ['last']
+        }
+    },
     plugins: []
 };

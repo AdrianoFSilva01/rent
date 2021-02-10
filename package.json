@@ -34,7 +34,7 @@
         "reflect-metadata": "^0.1.13",
         "sass-loader": "^10.0.5",
         "tailwindcss": "npm:@tailwindcss/postcss7-compat@^2.0.1",
-        "ts-debounce": "^2.1.0",
+        "ts-debounce": "^2.3.0",
         "ts-nameof": "^5.0.0",
         "ts-nameof-loader": "^1.0.2",
         "typescript": "^4.1.2",

@@ -5,7 +5,6 @@ interface ScrollOutsideElement extends HTMLElement {
     __vueClickEventHandler__: any;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default {
     beforeMount: function (el: ScrollOutsideElement, binding: DirectiveBinding): void {
         const ourClickEventHandler = (event: Event): void => {

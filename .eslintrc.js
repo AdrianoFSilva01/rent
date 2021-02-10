@@ -22,6 +22,7 @@ module.exports = {
         "prefer-const": "error",
         "indent": ["error", 4],
         "comma-dangle": ["error", "never"],
+        "no-unexpected-multiline": 0,
         "@typescript-eslint/no-inferrable-types": 0,
         "@typescript-eslint/explicit-function-return-type": ["error"],
         "@typescript-eslint/naming-convention": [
