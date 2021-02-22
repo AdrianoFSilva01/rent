@@ -2,21 +2,20 @@
 <template>
     <div class="flex w-full items-center">
         <div class="flex-1 flex items-center space-x-10">
-            <HamburgerMenu />
-            <UnderlineTextAnimated text="Apartments" />
-            <UnderlineTextAnimated text="Our House" />
-            <UnderlineTextAnimated text="Impressions" />
+            <HamburgerMenu class="transform-opacity-animation" />
+            <UnderlineTextAnimated class="transform-opacity-animation" style="animation-duration: 1.2s" text="Apartments" />
+            <UnderlineTextAnimated class="transform-opacity-animation" style="animation-duration: 1.4s" text="Our House" />
+            <UnderlineTextAnimated class="transform-opacity-animation" style="animation-duration: 1.6s" text="Impressions" />
         </div>
         <div class="flex cursor-pointer">
-            <img class="h-24" src="@/Assets/Images/rentlogo.svg" />
+            <img class="h-24 opacity-animation" src="@/Assets/Images/rentlogo.svg" />
         </div>
         <div class="flex-1 text-right">
-            <WaveButton buttontext="BOOK NOW" />
+            <WaveButton class="transform-opacity-animation" buttontext="BOOK NOW" />
         </div>
     </div>
 </template>
 
 <script lang="ts" src="./HeaderView.ts" />
 
-<style scoped lang="postcss">
-</style>
+<style scoped lang="postcss" src="./HeaderView.pcss" />

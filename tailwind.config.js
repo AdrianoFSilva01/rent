@@ -9,11 +9,15 @@ module.exports = {
                 gold: "#d6a159"
             },
             height: {
+                136: "34rem",
                 172: "43rem",
                 180: "45rem"
             },
             width: {
-                124: "31rem"
+                84: "21rem",
+                124: "31rem",
+                136: "34rem",
+                140: "35rem"
             },
             transitionDuration: {
                 400: "400ms",

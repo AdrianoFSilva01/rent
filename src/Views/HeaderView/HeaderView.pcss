@@ -1,0 +1,27 @@
+.transform-opacity-animation {
+    animation: transformAndOpacityAnim 1s forwards;
+}
+
+.opacity-animation {
+    animation: opacityAnim 2s forwards;
+}
+
+@keyframes transformAndOpacityAnim {
+    0% {
+        opacity: 0;
+        transform: translateY(-100%);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0%);
+    }
+}
+
+@keyframes opacityAnim {
+    0% {
+        opacity: 0;
+    }
+    100% {
+        opacity: 1;
+    }
+}
