@@ -27,3 +27,37 @@
         }
     }
 }
+
+.fade-animation {
+    animation: fadeAnim 1.5s forwards;
+}
+
+@keyframes fadeAnim {
+    0% {
+        opacity: 0;
+        transform: translateY(20%);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0%);
+    }
+}
+
+.sticky-text-with-arrow {
+    @apply flex items-center space-x-2 cursor-pointer;
+
+    hr {
+        @apply absolute border-black transition-all duration-main;
+    }
+
+    &:hover {
+        hr {
+            @apply border-gold;
+        }
+
+        hr:nth-child(1),
+        hr:nth-child(3) {
+            @apply w-2;
+        }
+    }
+}

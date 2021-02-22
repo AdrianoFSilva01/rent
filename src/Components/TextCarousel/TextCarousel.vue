@@ -13,4 +13,4 @@
     </div>
 </template>
 
-<script lang="ts" src="./TextSlider.ts" />
+<script lang="ts" src="./TextCarousel.ts" />

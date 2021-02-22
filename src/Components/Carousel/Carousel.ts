@@ -87,7 +87,7 @@ export default class Carousel extends Vue{
         return this.childElementWidth * Math.round((this.getTranslateX(this.absoluteElement) + this.leftMargin) / this.childElementWidth);
     }
 
-    nextSlider(): void {
+    nextItem(): void {
         this.setTransitionDuration();
         const translateX: number = this.getTranslateX(this.absoluteElement);
 
@@ -103,7 +103,7 @@ export default class Carousel extends Vue{
         return this.getTranslateX(this.absoluteElement) - this.childElementWidth < this.rightExtreme;
     }
 
-    previousSlider(): void {
+    previousItem(): void {
         this.setTransitionDuration();
         const translateX: number = this.getTranslateX(this.absoluteElement);
 
@@ -126,7 +126,7 @@ export default class Carousel extends Vue{
         return this.getTranslateX(this.absoluteElement) % this.childElementWidth != 0
     }
 
-    jumpSliders(element: HTMLElement): void {
+    nextSection(element: HTMLElement): void {
         this.setTransitionDuration();
         const translateX: number = this.getTranslateX(this.absoluteElement);
 

@@ -2,9 +2,9 @@ import { Options, Vue } from "vue-class-component";
 import { Prop } from "vue-property-decorator";
 
 @Options({
-    emits: ["update:modelValue", "selected-text-slider"]
+    emits: ["update:modelValue", "selected-text-carousel"]
 })
-export default class TextSlider extends Vue{
+export default class TextCarousel extends Vue{
     textSelected: string | null = "";
     @Prop({ default: null}) texts!: Array<string> | null;
 
@@ -18,6 +18,6 @@ export default class TextSlider extends Vue{
             this.element.style.opacity = "0.1";
         }
         this.element = event.target as HTMLElement;
-        this.$emit("selected-text-slider", this.textSelected);
+        this.$emit("selected-text-carousel", this.textSelected);
     }
 }

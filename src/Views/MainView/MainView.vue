@@ -1,12 +1,12 @@
 <template>
     <div class="space-y-10">
-        <div class="relative flex items-center h-180 w-full">
-            <Carousel ref="carousel" :images="images" />
+        <div class="fade-animation relative flex items-center h-180 w-full">
+            <Slider ref="slider" :images="images" />
             <Arrow class="absolute -left-5" @click="prevImage" />
             <Arrow class="absolute -right-5" :direction="ArrowDirection.right" @click="nextImage" />
         </div>
-        <div class="relative flex w-full h-40 justify-center">
-            <div class="absolute flex -top-20 w-4/5 h-full bg-gray-300 items-center space-x-10 px-10">
+        <div class="fade-animation relative flex w-full h-40 justify-center opacity-0 z-10" style="animation-delay: 0.5s">
+            <div class="absolute flex -top-28 w-4/5 h-full bg-gray-300 items-center space-x-10 px-10">
                 <div class="dropdown-container">
                     <div class="subtitle">
                         When
@@ -54,19 +54,24 @@
                 </div>
             </div>
         </div>
-        <div class="flex">
-            <TextSlider @selected-text-slider="onSelectedTextSlider" class="flex items-center text-3xl" :texts="Object.keys(sliders)" />
+        <div class="flex" v-in-viewport="'fade-animation'">
+            <TextCarousel @selected-text-carousel="onSelectedTextCarousel" class="flex items-center text-3xl" :texts="Object.keys(carouselItems)" />
             <div class="flex flex-grow justify-end">
-                <Arrow @click="previousSlider" :disable-button="disablePreviousSliderButton" />
-                <Arrow @click="nextSlider" :disable-button="disableNextSliderButton" :direction="ArrowDirection.right" />
+                <Arrow @click="previousCarouselItem" :disable-button="disablePreviousCarouselButton" />
+                <Arrow @click="nextCarouselItem" :disable-button="disableNextCarouselButton" :direction="ArrowDirection.right" />
             </div>
         </div>
-
-        <div class="flex">
-            <Slider class="h-172 w-full" ref="slider" v-model:next-button="disableNextSliderButton" v-model:previous-button="disablePreviousSliderButton">
-                <template v-for="(typeRoom, index) in sliders" :key="index">
+        <div class="flex overflow-hidden" v-in-viewport="'overflow-visible'">
+            <Carousel class="h-172 w-full" ref="carousel" v-model:next-button="disableNextCarouselButton" v-model:previous-button="disablePreviousCarouselButton">
+                <template v-for="(typeRoom, index) in carouselItems" :key="index">
                     <template v-for="(room, i) in typeRoom" :key="i">
-                        <div v-mouse-follower="'round-mouse-follower'" ref="roomSlider" :id="i === 0 ? index : ''" class="relative w-124 h-full last:mr-0 mr-5 text-white">
+                        <div ref="carouselItem"
+                             :id="i === 0 ? index : ''"
+                             v-in-viewport="'fade-animation'"
+                             v-mouse-follower="'round-mouse-follower'"
+                             class="relative w-124 h-full last:mr-0 mr-5 text-white opacity-0"
+                             :style="'animation-delay:' + 0.1 * typeRoom.position + 's'"
+                        >
                             <img :src="room[0]" class="absolute w-full h-full object-cover" />
                             <div class="overlay">
                                 <div class="flex flex-col relative justify-end p-10 w-full h-full">
@@ -86,7 +91,68 @@
                         </div>
                     </template>
                 </template>
-            </Slider>
+            </Carousel>
+        </div>
+        <div class="flex justify-center space-x-40 pt-20" v-in-viewport="'fade-animation'">
+            <div class="space-y-10">
+                <img class="h-136 w-140 object-cover" src="https://blog.flytour.com.br/wp-content/uploads/2019/11/blog.jpg" />
+                <img class="h-136 w-140 object-cover" src="https://cdn.olhares.pt/client/files/foto/big/580/5801262.jpg" />
+            </div>
+            <div class="w-84 sticky top-0 self-start py-12 space-y-10">
+                <p class="text-5xl">
+                    What stays, is what counts.
+                </p>
+                <p class="text-sm opacity-60">
+                    A holiday in Madeira can be many things.
+                    Full of adventure, full of excitement and adrenaline.
+                    Or soothing, calming and relaxing.
+                    In any case, it’s something that always stays in your memory.
+                </p>
+                <p class="text-sm opacity-60">
+                    Our rooms and studios located in the centre of Funchal are the ideal base from which to explore the region in all its variety,
+                    to spend quality time with friends and family, to be active, or to just do things for which you otherwise never have the time.
+                    Like nothing, for example.
+                </p>
+                <p class="text-sm opacity-60">
+                    Welcome to Madeira.
+                    <br />
+                    Rooms/Studios
+                    <br />
+                    in Funchal
+                </p>
+                <div class="sticky-text-with-arrow">
+                    <div class="transform rotate-180 relative w-5">
+                        <hr class="w-0 transform rotate-45 origin-bottom-left" />
+                        <hr class="w-full" />
+                        <hr class="w-0 transform -rotate-45 origin-top-left" />
+                    </div>
+                    <p class="text-sm">
+                        Our Island
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="pt-20 w-136 text-center mx-auto space-y-10" v-in-viewport="'fade-animation'">
+            <p class="text-4xl">
+                Whatever you like.
+            </p>
+            <p>
+                Want to spend the whole day indoors without feeling guilty?
+                <br />
+                Here, that’s no problem. But neither is going out. It’s just up to you.
+            </p>
+        </div>
+        <div class="h-96 w-20 bg-red-500">
+            Ola
+        </div>
+        <div class="h-96 w-20 bg-red-500">
+            Ola
+        </div>
+        <div class="h-96 w-20 bg-red-500">
+            Ola
+        </div>
+        <div class="h-96 w-20 bg-red-500">
+            Ola
         </div>
     </div>
 </template>
