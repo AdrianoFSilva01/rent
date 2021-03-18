@@ -1,5 +1,5 @@
 <template>
-    <button v-first-hover="'wave-button-animation'">
+    <button v-first-hover="'wave-button-animation'" class="border-black" @mouseover="ola" @mouseout="ola2">
         <template v-for="(char, index) in buttontext" :key="index">
             <span :style="'animation-delay: calc(var(--transition-duration-main)/4/' + buttontext.length + '*' + index + ')'">
                 <template v-if="char === ' '">

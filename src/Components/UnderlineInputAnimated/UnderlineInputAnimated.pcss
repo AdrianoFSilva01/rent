@@ -1,0 +1,17 @@
+input {
+    @apply border-b border-white border-opacity-50 outline-none bg-transparent text-white;
+
+    &::placeholder {
+        @apply text-white;
+    }
+}
+
+.input {
+    @apply relative;
+
+    &:hover {
+        div:not(.noHover) {
+            @apply w-1/3;
+        }
+    }
+}

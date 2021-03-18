@@ -1,9 +1,11 @@
 <template>
-    <div class="underline-text-animated">
-        <p>
-            {{ text }}
-        </p>
-        <hr class="border-black" />
+    <div class="flex">
+        <div class="underline-text-animated">
+            <p>
+                {{ text }}
+            </p>
+            <hr :class="'border-' + color" />
+        </div>
     </div>
 </template>
 

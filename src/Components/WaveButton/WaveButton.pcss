@@ -1,13 +1,18 @@
 button {
-    @apply relative border border-black py-2 px-4 overflow-hidden;
+    --background: black;
+    --span-text: black;
+    --span-hover-text: white;
+
+    @apply relative border py-2 px-4 overflow-hidden;
 
     span {
-        @apply inline-block transition duration-main text-black;
+        @apply inline-block transition duration-main;
+        color: var(--span-text);
     }
 
     &:hover {
         span {
-            @apply transition duration-main text-white;
+            @apply transition duration-main;
         }
 
         &:before {
@@ -17,7 +22,8 @@ button {
     }
 
     &:before {
-        @apply absolute bottom-0 left-0 transition-all transform duration-400 delay-100 h-0 w-full bg-black;
+        @apply absolute bottom-0 left-0 transition-all transform duration-400 delay-100 h-0 w-full;
+        background-color: var(--background);
         content: "";
     }
 }
@@ -25,11 +31,13 @@ button {
 .wave-button-animation {
     span {
         @apply animate-wave-button-animation-reverse;
+        color: var(--span-text);
     }
 
     &:hover {
         span {
             @apply animate-wave-button-animation;
+            color: var(--span-hover-text);
         }
     }
 }

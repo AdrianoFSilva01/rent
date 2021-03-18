@@ -1,0 +1,17 @@
+.social-media {
+    @apply flex space-x-2 items-center cursor-pointer;
+
+    .icon {
+        @apply transition-all duration-main w-6 h-6 border rounded-full;
+    }
+
+    &:hover {
+        .facebook-icon {
+            @apply bg-transparent;
+        }
+
+        .instagram-icon {
+            @apply bg-white;
+        }
+    }
+}
