@@ -1,0 +1,31 @@
+.big-picture {
+    @apply relative flex items-center justify-center h-180 w-full;
+
+    &:before {
+        @apply absolute top-0 left-0 w-full h-full bg-black opacity-40;
+        content: "";
+    }
+}
+
+.fade-animation {
+    animation: fadeAnim 1.5s forwards;
+}
+
+@keyframes fadeAnim {
+    0% {
+        opacity: 0;
+        transform: translateY(20%);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0%);
+    }
+}
+
+a.anchor {
+    @apply block relative -top-28;
+}
+
+div.sticky {
+    @apply top-28;
+}
