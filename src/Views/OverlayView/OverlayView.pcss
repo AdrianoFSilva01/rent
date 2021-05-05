@@ -1,0 +1,51 @@
+p {
+    @apply transition duration-main text-white cursor-pointer;
+
+    &:hover {
+        @apply translate-x-2;
+    }
+}
+
+span {
+    @apply cursor-pointer;
+}
+
+.teste {
+    @apply relative;
+
+    &:before {
+        @apply absolute bg-gradient-to-b from-transparent to-black opacity-60 w-full h-1/4 top-3/4 left-0;
+        content: "";
+    }
+}
+
+.closeButton {
+    @apply relative flex items-center justify-center cursor-pointer h-10 w-10 border rounded-full border-white transition-all duration-main border-opacity-50 hover:border-opacity-100;
+}
+
+.main-information {
+    @apply text-3xl;
+}
+
+.social-media {
+    @apply flex space-x-2 items-center cursor-pointer;
+
+    .icon {
+        @apply transition-all duration-main w-6 h-6 border rounded-full;
+    }
+
+    &:hover {
+        .facebook-icon {
+            @apply bg-gold;
+        }
+
+        .instagram-icon {
+            @apply bg-white;
+        }
+    }
+}
+
+.fade-enter-from,
+.fade-leave-to {
+    @apply opacity-0;
+}
