@@ -8,8 +8,11 @@ import { Options, Vue } from "vue-class-component";
         HamburgerMenu,
         UnderlineTextAnimated,
         WaveButton
-    }
+    },
+    emits: ["display-overlay"]
 })
 export default class HeaderView extends Vue {
-
+    displayOverlay(): void {
+        this.$emit("display-overlay");
+    }
 }

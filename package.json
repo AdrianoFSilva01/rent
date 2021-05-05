@@ -9,7 +9,8 @@
     },
     "dependencies": {
         "core-js": "^3.8.3",
-        "vue": "^3.0.5"
+        "vue": "^3.0.5",
+        "vue-router": "^4.0.6"
     },
     "devDependencies": {
         "@types/ts-nameof": "^4.2.1",
