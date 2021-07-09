@@ -29,7 +29,7 @@
                     </template>
                 </div>
             </div>
-            <div class="teste flex-grow p-20 flex items-end justify-between bg-cover"
+            <div class="contact-info flex-grow p-20 flex items-end justify-between bg-cover"
                  style="background-image: url(https://cdn.budgetyourtrip.com/images/photos/headerphotos/large/portugal_madeiraislands.jpg)"
             >
                 <div class="flex space-x-8 transition duration-main transform"

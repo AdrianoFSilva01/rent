@@ -43,6 +43,7 @@ export default class Main<T> extends Vue{
     @Ref() activitySlider!: SliderTs;
     @Ref() activityCarouselItem!: HTMLElement;
     @Ref() intervalBar!: HTMLElement;
+    @Ref() activitySliderContainer!: HTMLElement;
 
     selectedPersons: T | null = null;
     persons: Array<string> = ["1 Person", "2 Persons", "3 Persons", "4 Persons", "5 Persons"];
@@ -188,18 +189,16 @@ export default class Main<T> extends Vue{
         this.activitySlider.goToIndex(selected);
     }
 
-    @Ref() ola!: HTMLElement;
-
     activitySliderMouseDown(): void {
         this.activityCarousel.transitionEnded = false;
     }
 
     activitySliderMouseMoving(sliderClientX: number): void {
-        this.activityCarousel.selectedChanged((sliderClientX * this.activityCarousel.childElementWidth) / this.ola.clientWidth);
+        this.activityCarousel.selectedChanged((sliderClientX * this.activityCarousel.childElementWidth) / this.activitySliderContainer.clientWidth);
     }
 
     activityCarouselMouseMoving(carouselClientX: number, selectedItemIndex: number): void {
-        this.activitySlider.selectedChanging((carouselClientX * this.ola.clientWidth) / this.activityCarousel.childElementWidth, selectedItemIndex);
+        this.activitySlider.selectedChanging((carouselClientX * this.activitySliderContainer.clientWidth) / this.activityCarousel.childElementWidth, selectedItemIndex);
     }
 
     activityCarouselMouseUp(index: number): void {

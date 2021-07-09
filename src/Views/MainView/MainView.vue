@@ -150,7 +150,7 @@
                 Here, that’s no problem. But neither is going out. It’s just up to you.
             </p>
         </div>
-        <div class="relative flex items-center h-180 w-full" ref="ola">
+        <div class="relative flex items-center h-180 w-full" ref="activitySliderContainer">
             <Slider ref="activitySlider"
                     class="transition-all duration-700"
                     @changed-slider-image="changedActivitySliderImage"
