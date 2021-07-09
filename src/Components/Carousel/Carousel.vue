@@ -1,6 +1,6 @@
 <template>
-    <div ref="relativeElement" class="relative">
-        <div ref="absoluteElement" class="flex absolute h-full transform" style="cursor: grab" :onmousedown="onClick">
+    <div class="relative">
+        <div class="flex absolute h-full transform" :onmousedown="onMouseDown" @click="onClick">
             <slot />
         </div>
     </div>

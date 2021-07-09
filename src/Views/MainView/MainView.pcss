@@ -28,6 +28,22 @@
     }
 }
 
+.interval-bar {
+    @apply absolute bottom-0 bg-gold w-0 h-2 transition-all ease-linear transform;
+
+    &.loading {
+        @apply w-full;
+    }
+
+    &.loaded {
+        @apply w-0 right-0;
+    }
+
+    &.stop {
+        @apply w-0;
+    }
+}
+
 .fade-animation {
     animation: fadeAnim 1.5s forwards;
 }
@@ -43,7 +59,7 @@
     }
 }
 
-.sticky-text-with-arrow {
+.text-with-arrow {
     @apply flex items-center space-x-2 cursor-pointer;
 
     hr {

@@ -1,6 +1,6 @@
 <!-- prettier-ignore -->
 <template>
-    <div id="round-mouse-follower" class="absolute transform duration-200 w-10 h-10 border-2 border-white rounded-full pointer-events-none hidden z-10" />
+    <div id="round-mouse-follower" class="absolute w-10 h-10 border-2 border-white rounded-full pointer-events-none hidden z-10" />
     <Overlay ref="overlay" />
     <Header @display-overlay="displayOverlay" class="my-10" />
     <router-view />

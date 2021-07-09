@@ -1,9 +1,9 @@
 <template>
     <div class="space-y-10">
         <div class="fade-animation relative flex items-center h-180 w-full">
-            <Slider ref="slider" :images="images" />
-            <Arrow class="absolute -left-5" @click="prevImage" />
-            <Arrow class="absolute -right-5" :direction="ArrowDirection.right" @click="nextImage" />
+            <Slider class="transition-all duration-700" ref="slider" :images="images" :draggable="false" @disable-arrow="disableSliderArrow" @enable-arrow="enableSliderArrow" />
+            <Arrow class="absolute -left-5" :disable-button="disablePreviousSliderButton" @click="prevImage" />
+            <Arrow class="absolute -right-5" :disable-button="disableNextSliderButton" :direction="ArrowDirection.right" @click="nextImage" />
         </div>
         <div class="fade-animation relative flex w-full h-40 justify-center opacity-0 z-10" style="animation-delay: 0.5s">
             <div class="absolute flex -top-28 w-4/5 h-full bg-gray-300 items-center space-x-10 px-10">
@@ -55,14 +55,22 @@
             </div>
         </div>
         <div class="flex" v-in-viewport="'fade-animation'">
-            <TextCarousel @selected-text-carousel="onSelectedTextCarousel" class="flex items-center text-3xl" :texts="Object.keys(carouselItems)" />
+            <TextCarousel ref="textCarousel" @selected-text-carousel="onSelectedTextCarousel" class="flex items-center text-3xl" :texts="Object.keys(carouselItems)" />
             <div class="flex flex-grow justify-end">
                 <Arrow @click="previousCarouselItem" :disable-button="disablePreviousCarouselButton" />
                 <Arrow @click="nextCarouselItem" :disable-button="disableNextCarouselButton" :direction="ArrowDirection.right" />
             </div>
         </div>
         <div class="flex overflow-hidden" v-in-viewport="'overflow-visible'">
-            <Carousel class="h-172 w-full" ref="carousel" v-model:next-button="disableNextCarouselButton" v-model:previous-button="disablePreviousCarouselButton">
+            <Carousel class="h-172 w-full duration-700"
+                      ref="carousel"
+                      v-model="carouselIndex"
+                      v-model:next-button="disableNextCarouselButton"
+                      v-model:previous-button="disablePreviousCarouselButton"
+                      :click-to-move="false"
+                      @disable-arrow="disableArrow"
+                      @enable-arrow="enableArrow"
+            >
                 <template v-for="(typeRoom, index) in carouselItems" :key="index">
                     <template v-for="(room, i) in typeRoom" :key="i">
                         <div ref="carouselItem"
@@ -95,8 +103,8 @@
         </div>
         <div class="flex justify-center space-x-40 pt-20" v-in-viewport="'fade-animation'">
             <div class="space-y-10">
-                <img class="h-136 w-140 object-cover" src="https://blog.flytour.com.br/wp-content/uploads/2019/11/blog.jpg" />
-                <img class="h-136 w-140 object-cover" src="https://cdn.olhares.pt/client/files/foto/big/580/5801262.jpg" />
+                <img class="h-136 w-140 object-cover" src="https://media.tacdn.com/media/attractions-splice-spp-674x446/07/ab/f3/fd.jpg" />
+                <img class="h-136 w-140 object-cover" src="https://globalgrasshopper.com/wp-content/uploads/2014/01/Top-10-places-to-visit-in-Madeira.jpg" />
             </div>
             <div class="w-84 sticky top-0 self-start py-12 space-y-10">
                 <p class="text-5xl">
@@ -120,7 +128,7 @@
                     <br />
                     in Funchal
                 </p>
-                <div class="sticky-text-with-arrow">
+                <div class="text-with-arrow">
                     <div class="transform rotate-180 relative w-5">
                         <hr class="w-0 transform rotate-45 origin-bottom-left" />
                         <hr class="w-full" />
@@ -142,17 +150,67 @@
                 Here, that’s no problem. But neither is going out. It’s just up to you.
             </p>
         </div>
-        <div class="h-96 w-20 bg-red-500">
-            Ola
+        <div class="relative flex items-center h-180 w-full" ref="ola">
+            <Slider ref="activitySlider"
+                    class="transition-all duration-700"
+                    @changed-slider-image="changedActivitySliderImage"
+                    @activity-slider-mouse-down="activitySliderMouseDown"
+                    @activity-slider-mouse-moving="activitySliderMouseMoving"
+                    @add-interval="startIntervalBarTransition"
+                    @interval-loaded="intervalBarLoadedTransition"
+                    @stop-interval="intervalBarStopTransition"
+                    :selected-index="activitiesCarouselIndex"
+                    :images="activitiesImages"
+                    :draggable="true"
+                    :unable-to-change-opacity="unableToChangeSliderOpacity"
+            />
+            <div class="interval-bar" ref="intervalBar" />
         </div>
-        <div class="h-96 w-20 bg-red-500">
-            Ola
+        <div class="flex overflow-hidden" v-in-viewport="'overflow-visible'">
+            <Arrow @click="previousActivityCarouselItem" :disable-button="disablePreviousActivityCarouselButton" />
+            <Carousel ref="activityCarousel"
+                      id="activityCarousel"
+                      class="w-full duration-700 overflow-hidden"
+                      @stop-slider-interval="stopSliderInterval"
+                      @selected-changed="selectedChanged"
+                      @activity-carousel-mouse-moving="activityCarouselMouseMoving"
+                      @activity-carousel-mouse-up="activityCarouselMouseUp"
+                      @disable-arrow="disableActivityArrow"
+                      @enable-arrow="enableActivityArrow"
+                      v-model="activitiesCarouselIndex"
+                      :selected-position="SelectedPositionCarousel.middle"
+                      :click-to-move="true"
+                      v-model:being-dragged="activityCarouselBeingDragged"
+                      v-model:is-carousel-extreme="unableToChangeSliderOpacity"
+            >
+                <template v-for="(activity, index) in activities" :key="index">
+                    <div ref="activityCarouselItem" class="w-60 flex items-center justify-center border border-red-500">
+                        {{ activity[0] }}
+                    </div>
+                </template>
+            </Carousel>
+            <Arrow @click="nextActivityCarouselItem" :disable-button="disableNextActivityCarouselButton" :direction="ArrowDirection.right" />
         </div>
-        <div class="h-96 w-20 bg-red-500">
-            Ola
-        </div>
-        <div class="h-96 w-20 bg-red-500">
-            Ola
+        <div class="pt-20 flex flex-col items-center text-center space-y-10" v-in-viewport="'fade-animation'">
+            <div class="text-sm">
+                Our philosophy
+            </div>
+            <div class="w-3/5 text-3xl">
+                A feeling, a scent, a moment. A laugh, an mmm…, a yes. Arrive, breathe in, breathe
+                out, sleep through the night. Family, love, time and more time. Breakfast in bed,
+                breakfast at twelve, breakfast for two. An excursion, a sunny day, a Sunday on a
+                Monday. What stays? Everything stays. If you stay here.
+            </div>
+            <div class="text-with-arrow">
+                <div class="transform rotate-180 relative w-5">
+                    <hr class="w-0 transform rotate-45 origin-bottom-left" />
+                    <hr class="w-full" />
+                    <hr class="w-0 transform -rotate-45 origin-top-left" />
+                </div>
+                <p class="text-sm">
+                    Our Island
+                </p>
+            </div>
         </div>
     </div>
 </template>

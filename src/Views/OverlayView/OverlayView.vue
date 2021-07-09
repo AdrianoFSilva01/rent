@@ -10,7 +10,7 @@
                     <template v-for="(text, index) in ['Apartments', 'Contact & Directions', 'Our House', 'Impressions']" :key="index">
                         <p class="main-information transform"
                            :ontransitionend="changeDelay"
-                           :style="transitionDelay ? 'transition-delay: ' + (200 + 50 * index) + 'ms' : 'transition-delay: 0s'"
+                           :style="transitionDelay ? 'transition-delay: ' + (50 * index) + 'ms' : 'transition-delay: 0s'"
                            :class="transitionEnded ? 'translate-x-0 opacity-100':'-translate-x-8 opacity-0'"
                         >
                             {{ text }}
@@ -21,7 +21,7 @@
                     <template v-for="(text, index) in ['Terms', 'Priacy']" :key="index">
                         <p class="transform"
                            :ontransitionend="changeDelay"
-                           :style="transitionDelay ? 'transition-delay: ' + (800 + 50 * index) + 'ms' : 'transition-delay: 0s'"
+                           :style="transitionDelay ? 'transition-delay: ' + (200 + 50 * index) + 'ms' : 'transition-delay: 0s'"
                            :class="transitionEnded ? 'translate-x-0 opacity-100':'-translate-x-8 opacity-0'"
                         >
                             {{ text }}
@@ -34,7 +34,7 @@
             >
                 <div class="flex space-x-8 transition duration-main transform"
                      :ontransitionend="changeDelay"
-                     :style="transitionDelay ? 'transition-delay: ' + (1400) + 'ms' : 'transition-delay: 0s'"
+                     :style="transitionDelay ? 'transition-delay: ' + (400) + 'ms' : 'transition-delay: 0s'"
                      :class="transitionEnded ? 'translate-y-0 opacity-100':'translate-y-8 opacity-0'"
                 >
                     <span class="text-white text-sm opacity-50">
@@ -47,7 +47,7 @@
                 <div class="flex space-x-6">
                     <div class="social-media text-gold hover:text-white transition transform"
                          :ontransitionend="changeDelay"
-                         :style="transitionDelay ? 'transition-delay: ' + (2000) + 'ms; transition-duration: var(--transition-duration-main)' : 'transition-delay: 0s; transition-duration: 0s'"
+                         :style="transitionDelay ? 'transition-delay: ' + (800) + 'ms; transition-duration: var(--transition-duration-main)' : 'transition-delay: 0s; transition-duration: 0s'"
                          :class="transitionEnded ? 'translate-y-0 opacity-100':'translate-y-8 opacity-0'"
                     >
                         <div class="icon facebook-icon bg-white">
@@ -61,7 +61,7 @@
                     </div>
                     <div class="social-media text-white hover:text-gold transition transform"
                          :ontransitionend="changeDelay"
-                         :style="transitionDelay ? 'transition-delay: ' + (2500) + 'ms; transition-duration: var(--transition-duration-main)' : 'transition-delay: 0s; transition-duration: 0s'"
+                         :style="transitionDelay ? 'transition-delay: ' + (1000) + 'ms; transition-duration: var(--transition-duration-main)' : 'transition-delay: 0s; transition-duration: 0s'"
                          :class="transitionEnded ? 'translate-y-0 opacity-100':'translate-y-8 opacity-0'"
                     >
                         <div class="icon instagram-icon bg-gold p-1">

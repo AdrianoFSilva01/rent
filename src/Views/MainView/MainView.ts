@@ -2,17 +2,19 @@ import Arrow from "@/Components/Arrow/Arrow.vue";
 import ArrowDirection from "@/Components/Arrow/ArrowDirection";
 import CarouselTs from "@/Components/Carousel/Carousel";
 import Carousel from "@/Components/Carousel/Carousel.vue";
+import SelectedPositionCarousel from "@/Components/Carousel/SelectedPosition";
 import DatePickerTs from "@/Components/DatePicker/DatePicker";
 import DatePicker from "@/Components/DatePicker/DatePicker.vue";
 import Dropdown from "@/Components/Dropdown/Dropdown.vue";
 import DropdownList from "@/Components/DropdownList/DropdownList.vue";
 import SliderTs from "@/Components/Slider/Slider";
 import Slider from "@/Components/Slider/Slider.vue";
+import TextCarouselTs from "@/Components/TextCarousel/TextCarousel";
 import TextCarousel from "@/Components/TextCarousel/TextCarousel.vue";
 import WaveButton from "@/Components/WaveButton/WaveButton.vue";
 import DateTime from "@/Extensions/Types/DateTime/DateTime";
 import { Options, Vue } from "vue-class-component";
-import { Ref } from "vue-property-decorator";
+import { Ref, Watch } from "vue-property-decorator";
 
 @Options({
     components: {
@@ -26,22 +28,32 @@ import { Ref } from "vue-property-decorator";
         Slider
     },
     enums: {
-        ArrowDirection
+        ArrowDirection,
+        SelectedPositionCarousel
     }
 })
 export default class Main<T> extends Vue{
     @Ref() slider!: SliderTs;
     @Ref() datePicker!: DatePickerTs;
     @Ref() datePickerUntil!: DatePickerTs;
+    @Ref() textCarousel!: TextCarouselTs;
     @Ref() carousel!: CarouselTs;
     @Ref() carouselItem!: HTMLElement;
+    @Ref() activityCarousel!: CarouselTs;
+    @Ref() activitySlider!: SliderTs;
+    @Ref() activityCarouselItem!: HTMLElement;
+    @Ref() intervalBar!: HTMLElement;
 
     selectedPersons: T | null = null;
     persons: Array<string> = ["1 Person", "2 Persons", "3 Persons", "4 Persons", "5 Persons"];
 
     private _carouselItems: Rooms = new Rooms();
+    disableNextSliderButton: boolean = false;
+    disablePreviousSliderButton: boolean = false;
     disableNextCarouselButton: boolean = false;
     disablePreviousCarouselButton: boolean = false;
+    disableNextActivityCarouselButton: boolean = false;
+    disablePreviousActivityCarouselButton: boolean = false;
 
     images: Array<string> = ["https://magazine.luxevile.com/wp-content/uploads/2015/03/CasasDeLuxo16.jpg",
         "https://executivedigest.sapo.pt/wp-content/uploads/2019/08/92864803.jpg",
@@ -50,15 +62,37 @@ export default class Main<T> extends Vue{
     selectedDayUntil: DateTime | null = null;
     startDate: DateTime = new DateTime();
 
+    carouselIndex: number = 0;
+    carouselKeys: Array<string> = Object.keys(this._carouselItems);
+    carouselKeysIndex: number = 0;
+    carouselItemsLenght: number = this._carouselItems[this.carouselKeys[this.carouselKeysIndex]].length;
+
+    activities: Array<Array<string>> = [["Hiking", "https://www.wallpapertip.com/wmimgs/151-1513534_hiking-wallpaper-hiking-wallpaper-4k.jpg"],
+        ["Mountain Biking", "https://www.wallpapers13.com/wp-content/uploads/2020/02/With-Bicycle-all-over-the-world-Mountain-bike-trails-4K-ultra-HD-Wallpaper-1920x1080.jpg"],
+        ["Climbing", "https://www.pixel4k.com/wp-content/uploads/2018/10/girl-mountain-climber-5k_1538786999.jpg"],
+        ["Golf", "https://i.pinimg.com/originals/c6/ca/1f/c6ca1f1c86f0c6c037a38df6b3754be2.jpg"],
+        ["Jeep Tours", "https://adrenalineportugal.com/wp-content/uploads/2020/02/Our-fun-filled-Arrabida-Jeep-Tour.jpg"],
+        ["Sup Tours", "https://suptarifa.com/wp-content/uploads/2019/03/4k-wallpaper-adventure-beach-165505.jpg"],
+        ["Surf", "https://wallpaperaccess.com/full/1303332.jpg"]];
+    activitiesImages: Array<string>  = ["https://www.wallpapertip.com/wmimgs/151-1513534_hiking-wallpaper-hiking-wallpaper-4k.jpg",
+        "https://www.wallpapers13.com/wp-content/uploads/2020/02/With-Bicycle-all-over-the-world-Mountain-bike-trails-4K-ultra-HD-Wallpaper-1920x1080.jpg",
+        "https://www.pixel4k.com/wp-content/uploads/2018/10/girl-mountain-climber-5k_1538786999.jpg",
+        "https://i.pinimg.com/originals/c6/ca/1f/c6ca1f1c86f0c6c037a38df6b3754be2.jpg",
+        "https://adrenalineportugal.com/wp-content/uploads/2020/02/Our-fun-filled-Arrabida-Jeep-Tour.jpg",
+        "https://suptarifa.com/wp-content/uploads/2019/03/4k-wallpaper-adventure-beach-165505.jpg",
+        "https://wallpaperaccess.com/full/1303332.jpg"];
+    activitiesCarouselIndex: number = 0;
+    activityCarouselBeingDragged: boolean = false;
+    unableToChangeSliderOpacity: boolean = false;
+
     get carouselItems(): Rooms {
         return new Proxy(this._carouselItems, {
             get: (target: Rooms, property: string): unknown => {
-                const keys: Array<string> = Object.keys(this._carouselItems)
-                const index: number = keys.indexOf(property);
+                const index: number = this.carouselKeys.indexOf(property);
                 if(index >= 0) {
                     let position: number = 0;
                     for(let i: number = 0; i < index && index > 0; i++) {
-                        position+= this._carouselItems[keys[i]].length;
+                        position+= this._carouselItems[this.carouselKeys[i]].length;
                     }
                     return new Proxy(target[property], {
                         get: (innerTarget: Array<Array<string>>, innerProperty: string): unknown => {
@@ -88,6 +122,19 @@ export default class Main<T> extends Vue{
         }
     }
 
+    @Watch(nameof((main: Main<T>) => main.carouselIndex))
+    onActivitiesCarouselIndexChange(): void {
+        if(this.carouselIndex === this.carouselItemsLenght){
+            this.carouselKeysIndex++;
+            this.carouselItemsLenght += this._carouselItems[this.carouselKeys[this.carouselKeysIndex]].length;
+            this.textCarousel.textSelect(null, this.carouselKeysIndex);
+        } else if(this.carouselKeysIndex > 0 && this.carouselIndex === this.carouselItemsLenght - this._carouselItems[this.carouselKeys[this.carouselKeysIndex]].length - 1) {
+            this.carouselItemsLenght -= this._carouselItems[this.carouselKeys[this.carouselKeysIndex]].length;
+            this.carouselKeysIndex--;
+            this.textCarousel.textSelect(null, this.carouselKeysIndex);
+        }
+    }
+
     reset(): void {
         this.datePicker.reset();
     }
@@ -112,9 +159,114 @@ export default class Main<T> extends Vue{
         this.carousel.previousItem();
     }
 
+    changedActivitySliderImage(index: number): void {
+        this.activityCarousel.AlignByIndex(index);
+        this.disableNextActivityCarouselButton = true;
+        this.disablePreviousActivityCarouselButton = true;
+    }
+
     onSelectedTextCarousel(selectedTextCarousel: string): void {
         const element: HTMLElement = document.getElementById(selectedTextCarousel) as HTMLElement;
-        this.carousel.nextSection(element);
+        this.carousel.goToElement(element);
+    }
+
+    nextActivityCarouselItem(): void {
+        this.activitySlider.nextImage();
+        this.activityCarousel.nextItem();
+    }
+
+    previousActivityCarouselItem(): void {
+        this.activitySlider.previousImage();
+        this.activityCarousel.previousItem();
+    }
+
+    stopSliderInterval(): void {
+        this.activitySlider.stopInterval();
+    }
+
+    selectedChanged(selected: number): void {
+        this.activitySlider.goToIndex(selected);
+    }
+
+    @Ref() ola!: HTMLElement;
+
+    activitySliderMouseDown(): void {
+        this.activityCarousel.transitionEnded = false;
+    }
+
+    activitySliderMouseMoving(sliderClientX: number): void {
+        this.activityCarousel.selectedChanged((sliderClientX * this.activityCarousel.childElementWidth) / this.ola.clientWidth);
+    }
+
+    activityCarouselMouseMoving(carouselClientX: number, selectedItemIndex: number): void {
+        this.activitySlider.selectedChanging((carouselClientX * this.ola.clientWidth) / this.activityCarousel.childElementWidth, selectedItemIndex);
+    }
+
+    activityCarouselMouseUp(index: number): void {
+        this.activitySlider.selectedChanged(index);
+    }
+
+    activitySliderMoving(sliderWidth: number, mouseX: number): void {
+        this.activityCarousel.move((mouseX * this.activityCarouselItem.offsetWidth) / sliderWidth);
+    }
+
+    activityCarouselAlignItems(index: number): void {
+        this.activityCarousel.alignItems(index);
+    }
+
+    disableSliderArrow(): void {
+        this.disableNextSliderButton = true;
+        this.disablePreviousSliderButton = true;
+    }
+
+    enableSliderArrow(): void {
+        this.disableNextSliderButton = false;
+        this.disablePreviousSliderButton = false;
+    }
+
+    disableArrow(): void {
+        this.disableNextCarouselButton = true;
+        this.disablePreviousCarouselButton = true;
+    }
+
+    enableArrow(disableNextButton: boolean, disablePreviousButton: boolean): void {
+        this.disableNextCarouselButton = disableNextButton;
+        this.disablePreviousCarouselButton = disablePreviousButton;
+    }
+
+    disableActivityArrow(): void {
+        this.disableNextActivityCarouselButton = true;
+        this.disablePreviousActivityCarouselButton = true;
+        (this.activitySlider.$el as HTMLElement).style.cursor = "not-allowed";
+        ((this.activitySlider.$el as HTMLElement).firstElementChild as HTMLElement).style.pointerEvents = "none";
+    }
+
+    enableActivityArrow(): void {
+        this.disableNextActivityCarouselButton = false;
+        this.disablePreviousActivityCarouselButton = false;
+        (this.activitySlider.$el as HTMLElement).style.cursor = "grab";
+        ((this.activitySlider.$el as HTMLElement).firstElementChild as HTMLElement).style.pointerEvents = "auto";
+    }
+
+    startIntervalBarTransition(transitionDuration: number): void {
+        this.intervalBar.style.transitionDuration = transitionDuration + "ms";
+        this.intervalBar.classList.remove("loaded");
+        this.intervalBar.classList.remove("stop");
+        this.intervalBar.classList.add("loading");
+    }
+
+    intervalBarLoadedTransition(transitionDuration: number): void {
+        this.intervalBar.style.transitionDuration = transitionDuration + "s";
+        this.intervalBar.classList.remove("loading");
+        this.intervalBar.classList.remove("stop");
+        this.intervalBar.classList.add("loaded");
+    }
+
+    intervalBarStopTransition(transitionDuration: number): void {
+        this.intervalBar.style.transitionDuration = transitionDuration + "s";
+        this.intervalBar.classList.remove("loading");
+        this.intervalBar.classList.remove("loaded");
+        this.intervalBar.classList.add("stop");
     }
 }
 
