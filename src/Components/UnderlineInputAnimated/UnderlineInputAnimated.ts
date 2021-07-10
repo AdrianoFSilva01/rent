@@ -2,7 +2,7 @@ import { Vue } from "vue-class-component";
 import { Prop, Ref } from "vue-property-decorator";
 
 export default class UnderlineInputAnimated extends Vue {
-    @Prop() placeholderText!: string;
+    @Prop({required: true}) placeholderText!: string;
     @Ref() underline!: HTMLElement;
 
     underlineFull(): void {

@@ -11,7 +11,7 @@ import { ModelSync, Prop } from "vue-property-decorator";
 })
 export default class DatePicker extends Vue{
     @ModelSync("modelValue", "update:modelValue", { default: null} ) selectedDay!: DateTime | null;
-    @Prop( { default: null} ) startDate!: DateTime | null;
+    @Prop({ default: null}) startDate!: DateTime | null;
 
     private _date: DateTime = new DateTime();
 

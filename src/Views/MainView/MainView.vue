@@ -178,7 +178,7 @@
                       @disable-arrow="disableActivityArrow"
                       @enable-arrow="enableActivityArrow"
                       v-model="activitiesCarouselIndex"
-                      :selected-position="SelectedPositionCarousel.middle"
+                      :selected-position="1"
                       :click-to-move="true"
                       v-model:being-dragged="activityCarouselBeingDragged"
                       v-model:is-carousel-extreme="unableToChangeSliderOpacity"

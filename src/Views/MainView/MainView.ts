@@ -68,14 +68,14 @@ export default class Main<T> extends Vue{
     carouselKeysIndex: number = 0;
     carouselItemsLenght: number = this._carouselItems[this.carouselKeys[this.carouselKeysIndex]].length;
 
-    activities: Array<Array<string>> = [["Hiking", "https://www.wallpapertip.com/wmimgs/151-1513534_hiking-wallpaper-hiking-wallpaper-4k.jpg"],
+    activities: Array<Array<string>> = [["Hiking", "https://wallpaperaccess.com/full/428865.jpg"],
         ["Mountain Biking", "https://www.wallpapers13.com/wp-content/uploads/2020/02/With-Bicycle-all-over-the-world-Mountain-bike-trails-4K-ultra-HD-Wallpaper-1920x1080.jpg"],
         ["Climbing", "https://www.pixel4k.com/wp-content/uploads/2018/10/girl-mountain-climber-5k_1538786999.jpg"],
         ["Golf", "https://i.pinimg.com/originals/c6/ca/1f/c6ca1f1c86f0c6c037a38df6b3754be2.jpg"],
         ["Jeep Tours", "https://adrenalineportugal.com/wp-content/uploads/2020/02/Our-fun-filled-Arrabida-Jeep-Tour.jpg"],
         ["Sup Tours", "https://suptarifa.com/wp-content/uploads/2019/03/4k-wallpaper-adventure-beach-165505.jpg"],
         ["Surf", "https://wallpaperaccess.com/full/1303332.jpg"]];
-    activitiesImages: Array<string>  = ["https://www.wallpapertip.com/wmimgs/151-1513534_hiking-wallpaper-hiking-wallpaper-4k.jpg",
+    activitiesImages: Array<string>  = ["https://wallpaperaccess.com/full/428865.jpg",
         "https://www.wallpapers13.com/wp-content/uploads/2020/02/With-Bicycle-all-over-the-world-Mountain-bike-trails-4K-ultra-HD-Wallpaper-1920x1080.jpg",
         "https://www.pixel4k.com/wp-content/uploads/2018/10/girl-mountain-climber-5k_1538786999.jpg",
         "https://i.pinimg.com/originals/c6/ca/1f/c6ca1f1c86f0c6c037a38df6b3754be2.jpg",

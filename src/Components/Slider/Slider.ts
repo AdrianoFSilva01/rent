@@ -5,8 +5,8 @@ import { Prop, Ref } from "vue-property-decorator";
     emits: ["changed-slider-image", "activity-slider-mouse-down", "activity-slider-mouse-moving", "disable-arrow", "enable-arrow", "add-interval", "interval-loaded", "stop-interval"]
 })
 export default class Slider extends Vue{
-    @Prop() images!: Array<string>;
-    @Prop() draggable: boolean = false;
+    @Prop({required: true}) images!: Array<string>;
+    @Prop({default: false}) draggable!: boolean;
 
     @Ref() mainImage!: HTMLElement;
     @Ref() backgroundImage!: HTMLElement;

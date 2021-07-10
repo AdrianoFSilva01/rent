@@ -7,7 +7,7 @@ import { ModelSync, Prop } from "vue-property-decorator";
 })
 export default class DropdownList<T> extends Vue {
     @ModelSync("modelValue", "update:modelValue", { default: null} ) selected!: T;
-    @Prop({default: null}) list!: Array<T>;
+    @Prop({required: true}) list!: Array<T>;
 
     onSelected(selected: T): void {
         this.selected = selected;

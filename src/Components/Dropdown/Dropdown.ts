@@ -11,7 +11,7 @@ import { ModelSync, Prop, Ref, Watch } from "vue-property-decorator";
 })
 export default class Dropdown<T> extends Vue {
     @ModelSync("modelValue", "update:modelValue", { default: null} ) selected!: T | null;
-    @Prop() dropdownText: string | null = null;
+    @Prop({default: null}) dropdownText!: string | null;
     @Prop({ default: null}) source!: Array<T> | null;
     @Ref() component!: HTMLElement | null;
 

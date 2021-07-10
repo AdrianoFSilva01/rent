@@ -24,8 +24,8 @@ export default class Carousel extends Vue{
     @ModelSync('modelValue', 'update:modelValue') selectedItemIndex: number = 0;
     @ModelSync('isCarouselExtreme', 'update:isCarouselExtreme') isExtreme: boolean = false;
 
-    @Prop() selectedPosition: number = 0;
-    @Prop() clickToMove: boolean = false;
+    @Prop({default: 0}) selectedPosition!: number;
+    @Prop({default: false}) clickToMove!: boolean;
 
     relativeElement!: HTMLElement;
     absoluteElement!: HTMLElement;
