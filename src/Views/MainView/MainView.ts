@@ -185,6 +185,11 @@ export default class Main<T> extends Vue{
         this.activitySlider.stopInterval();
     }
 
+    addSliderInterval(): void {
+        this.activitySlider.occuringInterval = false;
+        this.activitySlider.addInterval();
+    }
+
     selectedChanged(selected: number): void {
         this.activitySlider.goToIndex(selected);
     }

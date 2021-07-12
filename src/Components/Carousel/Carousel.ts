@@ -3,7 +3,9 @@ import { Options, Vue } from "vue-class-component";
 import { ModelSync, Prop } from "vue-property-decorator";
 
 @Options({
-    emits: ["stop-slider-interval",
+    emits: [
+        "stop-slider-interval",
+        "add-slider-interval",
         "selected-changed",
         "activity-carousel-mouse-moving",
         "activity-carousel-mouse-up",
@@ -17,11 +19,11 @@ import { ModelSync, Prop } from "vue-property-decorator";
         "enable-arrow"
     ]
 })
-export default class Carousel extends Vue{
+export default class Carousel extends Vue {
     @ModelSync('nextButton', 'update:nextButton') disableNextButton: boolean = false;
     @ModelSync('previousButton', 'update:previousButton') disablePreviousButton: boolean = false;
     @ModelSync('beingDragged', 'update:beingDragged') dragged: boolean = false;
-    @ModelSync('modelValue', 'update:modelValue') selectedItemIndex: number = 0;
+    @ModelSync('modelValue', 'update:modelValue') selectedItemIndex!: number;
     @ModelSync('isCarouselExtreme', 'update:isCarouselExtreme') isExtreme: boolean = false;
 
     @Prop({default: 0}) selectedPosition!: number;
@@ -41,9 +43,11 @@ export default class Carousel extends Vue{
     transitionEnded: boolean = true;
     mouseMoved: boolean = false;
     didntAlign: boolean = false;
-    selectedIndex: number = 0;
     changeFinalPosition: boolean = false;
     transitionDuration: number = 0;
+    selectedChangedEnterIndex: number = -1;
+    onMouseDownMillisecond: number = 0;
+    onMouseUpMillisecond: number = 0;
 
     mounted(): void {
         this.transitionDuration = parseFloat(window.getComputedStyle(this.$el).transitionDuration);
@@ -62,13 +66,14 @@ export default class Carousel extends Vue{
 
         this.absoluteElement.addEventListener("transitionend", (event: Event) => {
             if(this.changeFinalPosition && event.target === this.absoluteElement) {
+                this.mouseMoved = false;
                 this.relativeElement.style.cursor = "grab";
                 this.absoluteElement.style.pointerEvents = "auto";
                 this.absoluteElement.style.transitionDuration = this.transitionDuration + "s";
                 this.transitionEnded = true;
                 this.changeFinalPosition = false;
-                this.selectedIndex = Math.abs((this.getTranslateX(this.absoluteElement) - this.inicialPosition) / this.childElementWidth);
                 this.finalPosition = this.getTranslateX(this.absoluteElement);
+                this.selectedChangedEnterIndex = -1;
                 this.$emit("enable-arrow", this.disableNextButton, this.disablePreviousButton);
             }
         })
@@ -103,9 +108,11 @@ export default class Carousel extends Vue{
 
     onClick(mouseEvent: MouseEvent): void {
         if(this.clickToMove) {
-            const selectedElement: HTMLElement = this.absoluteElement.children[this.selectedIndex] as HTMLElement;
+            const selectedElement: HTMLElement = this.absoluteElement.children[this.selectedItemIndex] as HTMLElement;
             if(selectedElement !== mouseEvent.target as HTMLElement && !this.mouseMoved) {
                 this.goToElement(mouseEvent.target as HTMLElement);
+            } else {
+                this.transitionEnded = true;
             }
 
             this.mouseMoved = false;
@@ -122,6 +129,7 @@ export default class Carousel extends Vue{
             document.onmousemove = this.onMouseMove;
             document.onmouseup = this.onMouseUp;
 
+            this.onMouseDownMillisecond = (new Date().getMinutes() * 60000) + (new Date().getSeconds() * 1000) + new Date().getMilliseconds();
             this.$emit("stop-slider-interval");
         }
     }
@@ -131,17 +139,21 @@ export default class Carousel extends Vue{
         this.relativeElement.style.cursor = "grabbing";
         this.mouseMoved = true;
 
+        let selectedItem: number = 0;
+
         if(this.finalPosition) {
             this.translateX(this.finalPosition + (mouseEvent.clientX - this.firstClickValue));
-            this.selectedItemIndex = Math.round((this.inicialPosition - (this.finalPosition + (mouseEvent.clientX - this.firstClickValue))) / this.childElementWidth);
+            selectedItem = Math.round((this.inicialPosition - (this.finalPosition + (mouseEvent.clientX - this.firstClickValue))) / this.childElementWidth);
+            this.selectedItemIndex = selectedItem;
         } else {
             this.translateX(this.finalPosition + this.inicialPosition + (mouseEvent.clientX - this.firstClickValue));
-            this.selectedItemIndex = Math.round((this.finalPosition + (this.firstClickValue - mouseEvent.clientX)) / this.childElementWidth);
+            selectedItem = Math.round((this.finalPosition + (this.firstClickValue - mouseEvent.clientX)) / this.childElementWidth);
+            this.selectedItemIndex = selectedItem;
         }
 
         this.checkExtremes(mouseEvent);
 
-        this.$emit("activity-carousel-mouse-moving", mouseEvent.clientX - this.firstClickValue, this.selectedItemIndex);
+        this.$emit("activity-carousel-mouse-moving", mouseEvent.clientX - this.firstClickValue, selectedItem);
     }
 
     move(value: number): void {
@@ -156,7 +168,6 @@ export default class Carousel extends Vue{
         document.onmouseup = null;
 
         if(this.mouseMoved) {
-            this.mouseMoved = false;
             this.relativeElement.style.cursor = "not-allowed";
             this.absoluteElement.style.pointerEvents = "none";
             this.absoluteElement.style.transitionDuration = this.transitionDuration + "s";
@@ -164,18 +175,22 @@ export default class Carousel extends Vue{
             const translateX: number = this.getTranslateX(this.absoluteElement);
             this.enterExtremeValue = 0;
 
+
             if(this.isExtremeLeft(translateX)) {
+                this.selectedItemIndex = 0;
                 this.translateX(this.inicialPosition);
                 this.transitionEnded = true;
                 this.$emit("activity-carousel-mouse-up", 0);
             }
             else if(this.isExtremeRight(translateX)) {
+                this.selectedItemIndex = this.absoluteElement.children.length - 1;
                 this.translateX(this.rightExtreme);
                 this.transitionEnded = true;
                 this.$emit("activity-carousel-mouse-up", this.absoluteElement.children.length - 1);
             } else {
                 const closestElementPosition: number = this.getClosestAlignedElementPosition();
                 if (closestElementPosition >= this.rightExtreme) {
+                    this.selectedItemIndex = (this.inicialPosition - closestElementPosition) / this.childElementWidth;
                     this.translateX(closestElementPosition);
                     this.$emit("activity-carousel-mouse-up", (this.inicialPosition - closestElementPosition) / this.childElementWidth);
                 }
@@ -184,6 +199,15 @@ export default class Carousel extends Vue{
             this.$emit("disable-arrow");
         } else {
             this.transitionEnded = true;
+            this.onMouseUpMillisecond = (new Date().getMinutes() * 60000) + (new Date().getSeconds() * 1000) + new Date().getMilliseconds();
+
+            if(this.onMouseUpMillisecond - this.onMouseDownMillisecond < this.transitionDuration * 1000) {
+                setTimeout(() => {
+                    this.$emit("add-slider-interval");
+                }, (this.transitionDuration * 1000) - (this.onMouseUpMillisecond - this.onMouseDownMillisecond));
+            } else {
+                this.$emit("add-slider-interval");
+            }
         }
     }
 
@@ -217,11 +241,13 @@ export default class Carousel extends Vue{
             const translateX: number = this.getTranslateX(this.absoluteElement);
 
             if(translateX === this.rightExtreme){
+                this.selectedItemIndex = 0;
                 this.translateX(this.inicialPosition);
             } else if(this.nextMoveIsExtremeRight()) {
                 const excededValue: number = (translateX - this.childElementWidth) - this.rightExtreme;
                 this.inicialPosition ? this.translateX(this.inicialPosition) : this.translateX(translateX - (this.childElementWidth + excededValue));
             } else {
+                this.selectedItemIndex = ((this.inicialPosition - translateX) / this.childElementWidth) + 1;
                 this.translateX(translateX - this.childElementWidth);
             }
 
@@ -250,12 +276,11 @@ export default class Carousel extends Vue{
                                 + this.childElementWidth * (translateX / this.childElementWidth);
 
                 this.translateX(translateX - excededValue);
-
             } else if(this.nextMoveIsExtremeLeft()) {
-                this.translateX(this.rightExtreme);
-            } else if(translateX === this.inicialPosition) {
+                this.selectedItemIndex = this.absoluteElement.children.length - 1;
                 this.translateX(this.rightExtreme);
             } else {
+                this.selectedItemIndex = ((this.inicialPosition - translateX) / this.childElementWidth) - 1;
                 this.translateX(translateX + this.childElementWidth);
             }
 
@@ -292,12 +317,32 @@ export default class Carousel extends Vue{
         }
 
         const selected: number = element.offsetLeft / this.childElementWidth;
+        this.selectedItemIndex = selected;
+
 
         this.$emit("selected-changed", selected);
         this.$emit("disable-arrow");
     }
 
     selectedChanged(position: number): void {
+        if(this.selectedChangedEnterIndex < 0) {
+            this.selectedChangedEnterIndex = this.selectedItemIndex;
+        }
+
+        if(position > 0) {
+            if(this.selectedChangedEnterIndex === 0) {
+                this.selectedItemIndex = this.absoluteElement.children.length - 1;
+            } else {
+                this.selectedItemIndex = this.selectedChangedEnterIndex - 1;
+            }
+        } else if(position < 0) {
+            if(this.selectedChangedEnterIndex === this.absoluteElement.children.length - 1) {
+                this.selectedItemIndex = 0;
+            } else {
+                this.selectedItemIndex = this.selectedChangedEnterIndex + 1;
+            }
+        }
+
         this.changeFinalPosition = true;
         this.absoluteElement.style.transitionDuration = "0ms";
         this.finalPosition ? this.translateX(this.finalPosition + position) : this.translateX(this.inicialPosition + position);
@@ -310,6 +355,7 @@ export default class Carousel extends Vue{
         this.absoluteElement.style.pointerEvents = "none";
         this.absoluteElement.style.transitionDuration = this.transitionDuration + "s";
 
+        this.selectedItemIndex = index;
         this.translateX(this.inicialPosition - (index * this.childElementWidth));
     }
 
@@ -325,7 +371,6 @@ export default class Carousel extends Vue{
         mouseEvent.preventDefault();
         const translateX: number = this.getTranslateX(this.absoluteElement);
         this.getExtremeValue(mouseEvent);
-        this.getSelectedItemIndexInExtremes(this.enterExtremeValue);
 
         if(this.isExtremeLeft(translateX)) {
             this.translateX(((mouseEvent.clientX - this.enterExtremeValue) * 0.1) + this.inicialPosition);
@@ -336,14 +381,6 @@ export default class Carousel extends Vue{
         } else {
             this.isExtreme = false;
             this.enterExtremeValue = 0;
-        }
-    }
-
-    getSelectedItemIndexInExtremes(enterExtremeValue: number): void {
-        if(this.finalPosition) {
-            this.selectedItemIndex = Math.round((this.inicialPosition - (this.finalPosition + (enterExtremeValue - this.firstClickValue))) / this.childElementWidth);
-        } else {
-            this.selectedItemIndex = Math.round((this.finalPosition + (this.firstClickValue - enterExtremeValue)) / this.childElementWidth);
         }
     }
 

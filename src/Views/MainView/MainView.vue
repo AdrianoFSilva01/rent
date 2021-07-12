@@ -172,6 +172,7 @@
                       id="activityCarousel"
                       class="w-full duration-700 overflow-hidden"
                       @stop-slider-interval="stopSliderInterval"
+                      @add-slider-interval="addSliderInterval"
                       @selected-changed="selectedChanged"
                       @activity-carousel-mouse-moving="activityCarouselMouseMoving"
                       @activity-carousel-mouse-up="activityCarouselMouseUp"
@@ -184,7 +185,7 @@
                       v-model:is-carousel-extreme="unableToChangeSliderOpacity"
             >
                 <template v-for="(activity, index) in activities" :key="index">
-                    <div ref="activityCarouselItem" class="w-60 flex items-center justify-center border border-red-500">
+                    <div ref="activityCarouselItem" class="w-60 flex items-center justify-center border-gold" :class="{'border-l': index !== 0, 'font-bold': activitiesCarouselIndex === index}">
                         {{ activity[0] }}
                     </div>
                 </template>
