@@ -6,7 +6,7 @@
             <Arrow class="absolute -right-5" :disable-button="disableNextSliderButton" :direction="ArrowDirection.right" @click="nextImage" />
         </div>
         <div class="fade-animation relative flex w-full h-40 justify-center opacity-0 z-10" style="animation-delay: 0.5s">
-            <div class="absolute flex -top-28 w-4/5 h-full bg-gray-300 items-center space-x-10 px-10">
+            <div class="absolute flex -top-28 w-4/5 h-full bg-white border-4 border-gold items-center space-x-10 px-10">
                 <div class="dropdown-container">
                     <div class="subtitle">
                         When
@@ -61,7 +61,7 @@
                 <Arrow @click="nextCarouselItem" :disable-button="disableNextCarouselButton" :direction="ArrowDirection.right" />
             </div>
         </div>
-        <div class="flex overflow-hidden" v-in-viewport="'overflow-visible'">
+        <div class="flex" v-in-viewport="'overflow-visible'">
             <Carousel class="h-172 w-full duration-700"
                       ref="carousel"
                       v-model="carouselIndex"
