@@ -23,7 +23,7 @@ export default class Slider extends Vue{
     divsElement: Array<HTMLElement> = [];
     resetOpacityValue: number = 0;
     duplicateClientX: number = 0;
-    selectedItemIndexTeste: number = 0;
+    selectedItemIndexSingleValue: number = 0;
     changeOpacityElement: number = -1;
     emitStopInterval: boolean = true;
 
@@ -377,8 +377,8 @@ export default class Slider extends Vue{
             this.divsElement[this.changeOpacityElement + 1].style.opacity = `${Math.abs(opacityValue)}`;
         }
 
-        if(this.selectedItemIndexTeste !== selectedItemIndex) {
-            if(this.selectedItemIndexTeste < selectedItemIndex){
+        if(this.selectedItemIndexSingleValue !== selectedItemIndex) {
+            if(this.selectedItemIndexSingleValue < selectedItemIndex){
                 if(selectedItemIndex === this.images.length - 1) {
                     ++this.mainImageIndex;
                     this.mainImage.appendChild(this.divsElement[0]);
@@ -408,7 +408,7 @@ export default class Slider extends Vue{
                         this.divsElement[this.mainImageIndex + 1].appendChild(this.imagesElement[this.mainImageIndex + 1]);
                     }, 1);
                 }
-            } else if(this.selectedItemIndexTeste > selectedItemIndex) {
+            } else if(this.selectedItemIndexSingleValue > selectedItemIndex) {
                 if(selectedItemIndex === 0) {
                     if(this.mainImageIndex > 0) {
                         --this.mainImageIndex;
@@ -443,7 +443,7 @@ export default class Slider extends Vue{
                 }
             }
 
-            this.selectedItemIndexTeste = selectedItemIndex;
+            this.selectedItemIndexSingleValue = selectedItemIndex;
         }
 
         if(Math.ceil(opacityValue) === -1) {
