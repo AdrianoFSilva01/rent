@@ -9,3 +9,5 @@
 </template>
 
 <script lang="ts" src="./DropdownList.ts" />
+
+<style scoped lang="postcss" src="./DropdownList.pcss" />

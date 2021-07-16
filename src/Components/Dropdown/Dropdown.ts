@@ -15,9 +15,23 @@ export default class Dropdown<T> extends Vue {
     @Prop({ default: null}) source!: Array<T> | null;
     @Ref() component!: HTMLElement | null;
 
+    @Prop() styleClass!: string;
+
+    bottomDistance: number = 0;
+
     @Watch(nameof((x: Dropdown<T>) => x.selected))
     onSelectedChange(): void {
         this.closeComponent();
+    }
+
+    mounted(): void {
+        if(this.component?.parentElement) {
+            this.bottomDistance = this.convertPixelsToRem(this.component?.parentElement?.offsetHeight);
+        }
+    }
+
+    convertPixelsToRem(pixels: number): number {
+        return pixels / parseFloat(getComputedStyle(document.documentElement).fontSize);
     }
 
     toggleComponent(): void {
@@ -37,8 +51,8 @@ export default class Dropdown<T> extends Vue {
     setupPosition(distanceBottom: number, distanceTop: number): void {
         if (this.component) {
             if (this.$el.getBoundingClientRect().top + this.component.offsetHeight + distanceBottom + this.$el.offsetHeight > window.innerHeight) {
-                this.component.classList.remove("top-" + distanceTop);
-                this.component.classList.add("bottom-" + distanceBottom);
+                this.component.classList.remove("top-8");
+                this.component.classList.add("bottom-9");
             } else {
                 this.component?.classList.add("top-" + distanceTop);
                 this.component?.classList.remove("bottom-" + distanceBottom);
