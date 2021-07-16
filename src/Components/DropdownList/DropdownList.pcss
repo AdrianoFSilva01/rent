@@ -1,0 +1,9 @@
+p {
+    &:not(:last-child):not(:hover) {
+        @apply border-b-transparent;
+    }
+
+    &:not(:first-child):not(:hover) {
+        @apply border-t-transparent;
+    }
+}
