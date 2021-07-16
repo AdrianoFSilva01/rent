@@ -1,6 +1,8 @@
 /* eslint-disable */
 const colors = require("tailwindcss/colors");
 
+const flattenColorPalette = require('tailwindcss/lib/util/flattenColorPalette').default;
+
 module.exports = {
     theme: {
         extend: {
@@ -64,12 +66,34 @@ module.exports = {
             sans: ["Segoe UI"]
         }
     },
-    purge: ["./public/**/*.html", "./src/**/*.vue"],
+    purge: ["./public/**/*.html", "./src/**/*.{vue,ts}"],
     variants: {
         extend: {
+            borderWidth: ['first', 'last', 'hover'],
             opacity: ['first'],
             margin: ['last']
         }
     },
-    plugins: []
+    plugins: [
+        ({ addUtilities, e, theme, variants }) => {
+            let colors = flattenColorPalette(theme('borderColor'));
+            delete colors['default'];
+
+            // Replace or Add custom colors
+            if(this.theme?.extend?.colors !== undefined){
+                colors = Object.assign(colors, this.theme.extend.colors);
+            }
+
+            const colorMap = Object.keys(colors)
+                .map(color => ({
+                    [`.border-t-${color}`]: {borderTopColor: colors[color]},
+                    [`.border-r-${color}`]: {borderRightColor: colors[color]},
+                    [`.border-b-${color}`]: {borderBottomColor: colors[color]},
+                    [`.border-l-${color}`]: {borderLeftColor: colors[color]},
+                }));
+            const utilities = Object.assign({}, ...colorMap);
+
+            addUtilities(utilities, variants('borderColor'));
+        },
+    ],
 };
