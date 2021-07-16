@@ -203,7 +203,7 @@ export default class Main<T> extends Vue{
     }
 
     activityCarouselMouseMoving(carouselClientX: number, selectedItemIndex: number): void {
-        this.activitySlider.selectedChanging((carouselClientX * this.activitySliderContainer.clientWidth) / this.activityCarousel.childElementWidth, selectedItemIndex);
+        this.activitySlider.selectedChanging(carouselClientX / this.activityCarousel.childElementWidth, selectedItemIndex);
     }
 
     activityCarouselMouseUp(index: number): void {
