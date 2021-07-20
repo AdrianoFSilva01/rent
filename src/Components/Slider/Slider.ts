@@ -2,7 +2,16 @@ import { Options, Vue } from "vue-class-component";
 import { Prop, Ref } from "vue-property-decorator";
 
 @Options({
-    emits: ["changed-slider-image", "activity-slider-mouse-down", "activity-slider-mouse-moving", "disable-arrow", "enable-arrow", "add-interval", "interval-loaded", "stop-interval"]
+    emits: ["changed-slider-image",
+        "activity-slider-mouse-down",
+        "activity-slider-mouse-moving",
+        "activity-slider-mouse-up",
+        "disable-arrow",
+        "enable-arrow",
+        "add-interval",
+        "interval-loaded",
+        "stop-interval"
+    ]
 })
 export default class Slider extends Vue{
     @Prop({required: true}) images!: Array<string>;
@@ -24,8 +33,11 @@ export default class Slider extends Vue{
     resetOpacityValue: number = 0;
     duplicateClientX: number = 0;
     selectedItemIndexSingleValue: number = 0;
+    changeOpacityMargin: number = 100;
     changeOpacityElement: number = -1;
     emitStopInterval: boolean = true;
+    onMouseUpMillisecond: number = 0;
+    onMouseDownMillisecond: number = 0;
 
     mounted(): void {
         this.transitionDuration = parseFloat(window.getComputedStyle(this.mainImage).transitionDuration);
@@ -93,25 +105,26 @@ export default class Slider extends Vue{
             }
             document.onmousemove = this.onMouseMove;
             document.onmouseup = this.onMouseUp;
+
+            this.onMouseDownMillisecond = (new Date().getMinutes() * 60000) + (new Date().getSeconds() * 1000) + new Date().getMilliseconds();
         }
 
         this.$emit("activity-slider-mouse-down");
     }
 
     onMouseMove(mouseEvent: MouseEvent): void {
-        const changeOpacityMargin: number = 50;
         const minOpacityValid: number = 0.01;
         const maxOpacityValid: number = 0.99;
 
-        if(mouseEvent.clientX > this.onMouseDownClientX + changeOpacityMargin || mouseEvent.clientX < this.onMouseDownClientX - changeOpacityMargin) {
+        if(mouseEvent.clientX > this.onMouseDownClientX + this.changeOpacityMargin || mouseEvent.clientX < this.onMouseDownClientX - this.changeOpacityMargin) {
             if(this.onMouseDownClientX - mouseEvent.clientX < 0) {
-                this.mainImageOpacity = 1 - (((mouseEvent.clientX - this.onMouseDownClientX) - changeOpacityMargin) / 1000);
+                this.mainImageOpacity = 1 - (((mouseEvent.clientX - this.onMouseDownClientX) - this.changeOpacityMargin) / 1000);
 
                 this.mainImageOpacity < minOpacityValid
                     ? this.divsElement[this.mainImageIndex].style.opacity = "" + minOpacityValid
                     : this.divsElement[this.mainImageIndex].style.opacity = "" + this.mainImageOpacity;
             } else if(this.onMouseDownClientX - mouseEvent.clientX > 0) {
-                this.mainImageOpacity = ((this.onMouseDownClientX - mouseEvent.clientX) - changeOpacityMargin) / 1000;
+                this.mainImageOpacity = ((this.onMouseDownClientX - mouseEvent.clientX) - this.changeOpacityMargin) / 1000;
 
                 this.mainImageOpacity > maxOpacityValid
                     ? this.divsElement[this.mainImageIndex === this.images.length - 1 ? 0 : this.mainImageIndex + 1].style.opacity = "" + maxOpacityValid
@@ -119,24 +132,43 @@ export default class Slider extends Vue{
             }
         }
 
-        this.$emit("activity-slider-mouse-moving", mouseEvent.clientX - this.onMouseDownClientX);
+        this.$emit("activity-slider-mouse-moving", mouseEvent.clientX - this.onMouseDownClientX, this.changeOpacityMargin);
     }
 
     onMouseUp(mouseEvent: MouseEvent): void {
         document.onmousemove = null;
 
-        if(mouseEvent.clientX < this.onMouseDownClientX) {
-            this.nextImage();
-        } else if(mouseEvent.clientX > this.onMouseDownClientX) {
+        if(mouseEvent.clientX < this.onMouseDownClientX - this.changeOpacityMargin) {
+            this.nextImage(true);
+        } else if(mouseEvent.clientX > this.onMouseDownClientX + this.changeOpacityMargin) {
             this.previousImage();
         } else {
-            this.addInterval();
+            (this.$el as HTMLElement).style.cursor = "not-allowed";
+            ((this.$el as HTMLElement).firstElementChild as HTMLElement).style.pointerEvents = "none";
+
+            if(mouseEvent.clientX === this.onMouseDownClientX) {
+                this.onMouseUpMillisecond = (new Date().getMinutes() * 60000) + (new Date().getSeconds() * 1000) + new Date().getMilliseconds();
+
+                if(this.onMouseUpMillisecond - this.onMouseDownMillisecond < this.transitionDuration * 1000) {
+                    setTimeout(() => {
+                        this.addInterval();
+                        (this.$el as HTMLElement).style.cursor = "grab";
+                        ((this.$el as HTMLElement).firstElementChild as HTMLElement).style.pointerEvents = "auto";
+                    }, (this.transitionDuration * 1000) - (this.onMouseUpMillisecond - this.onMouseDownMillisecond));
+                } else {
+                    this.addInterval();
+                    (this.$el as HTMLElement).style.cursor = "grab";
+                    ((this.$el as HTMLElement).firstElementChild as HTMLElement).style.pointerEvents = "auto";
+                }
+            } else {
+                this.$emit("activity-slider-mouse-up");
+            }
         }
 
         document.onmouseup = null;
     }
 
-    nextImage(): void {
+    nextImage(clicked: boolean): void {
         if(this.transitionEnded) {
             if(this.draggable) {
                 (this.$el as HTMLElement).style.cursor = "not-allowed";
@@ -153,6 +185,7 @@ export default class Slider extends Vue{
                 this.mainImageIndex = 0;
 
                 this.mainImage.appendChild(this.divsElement[this.mainImageIndex + 1]);
+                this.divsElement[this.mainImageIndex + 1].style.opacity = "0";
 
                 setTimeout(() => {
                     this.divsElement[this.mainImageIndex + 1].appendChild(this.imagesElement[this.mainImageIndex + 1]);
@@ -161,6 +194,7 @@ export default class Slider extends Vue{
                 this.addTransition(this.divsElement[0], 1);
             } else if (this.mainImageIndex + 1 === this.images.length - 1) {
                 this.mainImage.appendChild(this.divsElement[0]);
+                this.divsElement[0].style.opacity = "0";
 
                 setTimeout(() => {
                     this.divsElement[0].appendChild(this.imagesElement[0]);
@@ -169,9 +203,9 @@ export default class Slider extends Vue{
                 this.addTransition(this.divsElement[this.images.length - 1], 1);
 
                 this.mainImageIndex = this.images.length - 1;
-            }
-            else {
+            } else {
                 this.mainImage.appendChild(this.divsElement[++this.mainImageIndex + 1]);
+                this.divsElement[this.mainImageIndex + 1].style.opacity = "0";
 
                 setTimeout(() => {
                     this.divsElement[this.mainImageIndex + 1].appendChild(this.imagesElement[this.mainImageIndex + 1]);
@@ -188,7 +222,11 @@ export default class Slider extends Vue{
 
             this.$emit("changed-slider-image", this.mainImageIndex === - 1 ? this.images.length - 1 : this.mainImageIndex);
             this.$emit("disable-arrow");
-            this.$emit("interval-loaded", this.transitionDuration);
+            if(clicked) {
+                this.$emit("stop-interval", this.transitionDuration);
+            } else {
+                this.$emit("interval-loaded", this.transitionDuration);
+            }
         }
     }
 
@@ -545,7 +583,7 @@ export default class Slider extends Vue{
         const intervalTimer: number = 7000;
         if(!this.occuringInterval) {
             this.changeImageInterval = setInterval(() => {
-                this.nextImage();
+                this.nextImage(false);
             }, intervalTimer);
             this.$emit("add-interval", intervalTimer);
         }
