@@ -1,6 +1,6 @@
 <template>
     <div v-click-outside="closeComponent" v-scroll-outside="closeComponent" v-bind="$attrs">
-        <div class="flex justify-between cursor-pointer" @click="toggleComponent">
+        <div class="flex justify-between" @click="toggleComponent">
             <div v-if="selected">
                 <slot name="selected" :selected="selected">
                     {{ selected.toString() }}

@@ -8,6 +8,14 @@
 
 .dropdown {
     @apply relative border-b border-black pb-2;
+
+    &.disabled {
+        @apply cursor-not-allowed;
+    }
+
+    &:not(.disabled) {
+        @apply cursor-pointer;
+    }
 }
 
 .overlay {
