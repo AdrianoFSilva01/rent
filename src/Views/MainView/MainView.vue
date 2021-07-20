@@ -1,7 +1,7 @@
 <template>
     <div class="space-y-10">
         <div class="fade-animation relative flex items-center h-180 w-full">
-            <Slider class="transition-all duration-700" ref="slider" :images="images" :draggable="false" @disable-arrow="disableSliderArrow" @enable-arrow="enableSliderArrow" />
+            <Slider class="transition-all duration-500" ref="slider" :images="images" :draggable="false" @disable-arrow="disableSliderArrow" @enable-arrow="enableSliderArrow" />
             <Arrow class="absolute -left-5" :disable-button="disablePreviousSliderButton" @click="prevImage" />
             <Arrow class="absolute -right-5" :disable-button="disableNextSliderButton" :direction="ArrowDirection.right" @click="nextImage" />
         </div>
@@ -27,7 +27,7 @@
                         How Long
                     </div>
                     <div>
-                        <Dropdown dropdown-text="Until" v-model="selectedDayUntil" @open-component="resetUntil" class="dropdown">
+                        <Dropdown dropdown-text="Until" v-model="selectedDayUntil" @open-component="resetUntil" class="dropdown" :class="{'disabled': !selectedDay}">
                             <svg class="w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                             </svg>
@@ -68,7 +68,7 @@
             </div>
         </div>
         <div class="flex" v-in-viewport="'overflow-visible'">
-            <Carousel class="h-172 w-full duration-700"
+            <Carousel class="h-172 w-full duration-500"
                       ref="carousel"
                       v-model="carouselIndex"
                       v-model:next-button="disableNextCarouselButton"
@@ -158,10 +158,11 @@
         </div>
         <div class="relative flex items-center h-180 w-full" ref="activitySliderContainer">
             <Slider ref="activitySlider"
-                    class="transition-all duration-700"
+                    class="transition-all duration-500"
                     @changed-slider-image="changedActivitySliderImage"
                     @activity-slider-mouse-down="activitySliderMouseDown"
                     @activity-slider-mouse-moving="activitySliderMouseMoving"
+                    @activity-slider-mouse-up="activitySliderMouseUp"
                     @add-interval="startIntervalBarTransition"
                     @interval-loaded="intervalBarLoadedTransition"
                     @stop-interval="intervalBarStopTransition"
@@ -176,7 +177,7 @@
             <Arrow @click="previousActivityCarouselItem" :disable-button="disablePreviousActivityCarouselButton" />
             <Carousel ref="activityCarousel"
                       id="activityCarousel"
-                      class="w-full duration-700 overflow-hidden"
+                      class="w-full duration-500 overflow-hidden"
                       @stop-slider-interval="stopSliderInterval"
                       @add-slider-interval="addSliderInterval"
                       @selected-changed="selectedChanged"
@@ -196,7 +197,7 @@
                     </div>
                 </template>
             </Carousel>
-            <Arrow @click="nextActivityCarouselItem" :disable-button="disableNextActivityCarouselButton" :direction="ArrowDirection.right" />
+            <Arrow @click="nextActivityCarouselItem(true)" :disable-button="disableNextActivityCarouselButton" :direction="ArrowDirection.right" />
         </div>
         <div class="pt-20 flex flex-col items-center text-center space-y-10" v-in-viewport="'fade-animation'">
             <div class="text-sm">
