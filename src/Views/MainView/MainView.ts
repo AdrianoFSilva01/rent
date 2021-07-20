@@ -149,7 +149,7 @@ export default class Main<T> extends Vue{
     }
 
     nextImage(): void {
-        this.slider.nextImage();
+        this.slider.nextImage(false);
     }
 
     nextCarouselItem(): void {
@@ -171,8 +171,8 @@ export default class Main<T> extends Vue{
         this.carousel.goToElement(element);
     }
 
-    nextActivityCarouselItem(): void {
-        this.activitySlider.nextImage();
+    nextActivityCarouselItem(clicked: boolean): void {
+        this.activitySlider.nextImage(clicked);
         this.activityCarousel.nextItem();
     }
 
@@ -198,8 +198,16 @@ export default class Main<T> extends Vue{
         this.activityCarousel.transitionEnded = false;
     }
 
-    activitySliderMouseMoving(sliderClientX: number): void {
-        this.activityCarousel.selectedChanged((sliderClientX * this.activityCarousel.childElementWidth) / this.activitySliderContainer.clientWidth);
+    activitySliderMouseMoving(sliderClientX: number, changeOpacityMargin: number): void {
+        this.activityCarousel.selectedChanged(
+            (sliderClientX * this.activityCarousel.childElementWidth) / this.activitySliderContainer.clientWidth,
+            (changeOpacityMargin * this.activityCarousel.childElementWidth) / this.activitySliderContainer.clientWidth
+        );
+    }
+
+    activitySliderMouseUp(): void {
+        this.activityCarousel.addInterval = true;
+        this.activityCarousel.AlignByIndex(this.activityCarousel.selectedItemIndex);
     }
 
     activityCarouselMouseMoving(carouselClientX: number, selectedItemIndex: number): void {
