@@ -260,6 +260,7 @@ export default class Carousel extends Vue {
             } else if(this.nextMoveIsExtremeRight()) {
                 const excededValue: number = (translateX - this.childElementWidth) - this.rightExtreme;
                 this.inicialPosition ? this.translateX(this.inicialPosition) : this.translateX(translateX - (this.childElementWidth + excededValue));
+                this.selectedItemIndex = Math.round(((this.childElementWidth + excededValue) - translateX) / this.childElementWidth);
             } else {
                 this.selectedItemIndex = ((this.inicialPosition - translateX) / this.childElementWidth) + 1;
                 this.translateX(translateX - this.childElementWidth);
@@ -289,6 +290,7 @@ export default class Carousel extends Vue {
                                 )
                                 + this.childElementWidth * (translateX / this.childElementWidth);
 
+                this.selectedItemIndex = (excededValue - translateX) / this.childElementWidth;
                 this.translateX(translateX - excededValue);
             } else if(this.nextMoveIsExtremeLeft()) {
                 this.selectedItemIndex = this.absoluteElement.children.length - 1;
@@ -338,23 +340,25 @@ export default class Carousel extends Vue {
         this.$emit("disable-arrow");
     }
 
-    selectedChanged(position: number): void {
+    selectedChanged(position: number, changeOpacityMargin: number): void {
         if(this.selectedChangedEnterIndex < 0) {
             this.selectedChangedEnterIndex = this.selectedItemIndex;
         }
 
-        if(position > 0) {
+        if(position > changeOpacityMargin) {
             if(this.selectedChangedEnterIndex === 0) {
                 this.selectedItemIndex = this.absoluteElement.children.length - 1;
             } else {
                 this.selectedItemIndex = this.selectedChangedEnterIndex - 1;
             }
-        } else if(position < 0) {
+        } else if(position < -changeOpacityMargin) {
             if(this.selectedChangedEnterIndex === this.absoluteElement.children.length - 1) {
                 this.selectedItemIndex = 0;
             } else {
                 this.selectedItemIndex = this.selectedChangedEnterIndex + 1;
             }
+        } else {
+            this.selectedItemIndex = this.selectedChangedEnterIndex;
         }
 
         this.changeFinalPosition = true;
