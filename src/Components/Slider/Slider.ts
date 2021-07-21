@@ -33,13 +33,15 @@ export default class Slider extends Vue{
     resetOpacityValue: number = 0;
     duplicateClientX: number = 0;
     selectedItemIndexSingleValue: number = 0;
-    changeOpacityMargin: number = 100;
+    changeOpacityMarginPercentage: number = 10;
+    changeOpacityMargin: number = 0;
     changeOpacityElement: number = -1;
     emitStopInterval: boolean = true;
     onMouseUpMillisecond: number = 0;
     onMouseDownMillisecond: number = 0;
 
     mounted(): void {
+        this.changeOpacityMargin = (this.changeOpacityMarginPercentage / 100) * this.mainImage.offsetWidth;
         this.transitionDuration = parseFloat(window.getComputedStyle(this.mainImage).transitionDuration);
         this.addInterval();
 
@@ -75,6 +77,7 @@ export default class Slider extends Vue{
         for(const image in this.images) {
             this.imagesElement[image] = document.createElement("img");
             this.imagesElement[image].src = this.images[image];
+            this.imagesElement[image].draggable = false;
             this.imagesElement[image].classList.add("absolute", "top-0", "object-cover", "object-center", "h-full", "w-full");
         }
 
@@ -247,6 +250,7 @@ export default class Slider extends Vue{
 
                 setTimeout(() => {
                     this.divsElement[this.images.length - 2].appendChild(this.imagesElement[this.images.length - 2]);
+                    this.divsElement[this.images.length - 2].style.opacity = "1";
                     this.divsElement[this.images.length - 1].style.opacity = "1";
                 }, 1);
 

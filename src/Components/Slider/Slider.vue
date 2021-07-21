@@ -1,5 +1,5 @@
 <template>
-    <div class="w-full h-full">
+    <div class="w-full h-full select-none">
         <div ref="mainImage" v-bind="$attrs" :onmousedown="draggable ? onMouseDown : null" />
     </div>
 </template>
