@@ -124,10 +124,12 @@ export default class Main<T> extends Vue{
     }
 
     @Watch(nameof((main: Main<T>) => main.carouselIndex))
-    onActivitiesCarouselIndexChange(): void {
+    onCarouselIndexChange(): void {
         if(this.carouselIndex === this.carouselItemsLenght){
-            this.carouselKeysIndex++;
-            this.carouselItemsLenght += this._carouselItems[this.carouselKeys[this.carouselKeysIndex]].length;
+            if(this.carouselKeysIndex < this.carouselKeys.length - 1) {
+                this.carouselKeysIndex++;
+                this.carouselItemsLenght += this._carouselItems[this.carouselKeys[this.carouselKeysIndex]].length;
+            }
             this.textCarousel.textSelect(null, this.carouselKeysIndex);
         } else if(this.carouselKeysIndex > 0 && this.carouselIndex === this.carouselItemsLenght - this._carouselItems[this.carouselKeys[this.carouselKeysIndex]].length - 1) {
             this.carouselItemsLenght -= this._carouselItems[this.carouselKeys[this.carouselKeysIndex]].length;
@@ -291,4 +293,9 @@ class Rooms implements Record<string, Array<Array<string>>>{
         ["https://robbreport.com/wp-content/uploads/2019/02/hotel-ottilia-suite_bedroom.jpg?w=1000", "Comfort Studio", "4 Persons, approx. 40m²", "from 139€"],
         ["https://i.pinimg.com/originals/fe/19/aa/fe19aa5489cfb0a8ce4d5c6d2666c946.jpg", "Penthouse Studio", "max. 4 Persons, approx. 40m²", "from 179€"],
         ["https://cf.bstatic.com/images/hotel/max1024x768/153/153840518.jpg", "Garden Studio", "max. 4 Persons, approx. 60m²", "from 179€"]]
+    Room: Array<Array<string>> = [
+        ["https://imgcy.trivago.com/c_limit,d_dummy.jpeg,f_auto,h_1300,q_auto,w_2000/itemimages/35/04/3504320_v1.jpeg", "Deluxe Room", "2 Persons, approx. 30m²", "from 109€"],
+        ["https://petervonstamm-travelblog.com/wp-content/uploads/2017/11/Mood-Rooms-NH-Collection-Eurobuilding-Madrid-TITEL.jpg", "Comfort Room", "max. 3 Persons, approx. 40m²", "from 149€"],
+        ["https://hauteliving.com/wp-content/uploads/2017/12/four-seasons-wellness-room_35629330350_o_35236594663_o-1.jpg", "Penthouse Room", "max. 4 Persons, approx. 60m²", "from 179€"],
+        ["https://dynamic-media-cdn.tripadvisor.com/media/photo-o/13/ee/d8/a4/sea-view-room-galomar.jpg?w=900&h=-1&s=1", "Garden Room", "max. 4 Persons, approx. 70m²", "from 189€"]]
 }
