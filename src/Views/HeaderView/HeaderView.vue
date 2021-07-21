@@ -11,7 +11,7 @@
         </div>
         <div class="flex cursor-pointer">
             <router-link to="/">
-                <img class="h-24 opacity-animation" src="@/Assets/Images/rentlogo.svg" />
+                <img class="h-20 opacity-animation" src="@/Assets/Images/rentlogo.svg" />
             </router-link>
         </div>
         <div class="flex-1 text-right">
