@@ -33,7 +33,7 @@ export default class Slider extends Vue{
     resetOpacityValue: number = 0;
     duplicateClientX: number = 0;
     selectedItemIndexSingleValue: number = 0;
-    changeOpacityMarginPercentage: number = 10;
+    changeOpacityMarginPercentage: number = 15;
     changeOpacityMargin: number = 0;
     changeOpacityElement: number = -1;
     emitStopInterval: boolean = true;
