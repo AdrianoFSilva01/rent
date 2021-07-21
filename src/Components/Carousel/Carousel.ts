@@ -207,6 +207,8 @@ export default class Carousel extends Vue {
                     this.selectedItemIndex = (this.inicialPosition - closestElementPosition) / this.childElementWidth;
                     this.translateX(closestElementPosition);
                     this.$emit("activity-carousel-mouse-up", (this.inicialPosition - closestElementPosition) / this.childElementWidth);
+                } else {
+                    this.translateX(this.rightExtreme);
                 }
             }
 
