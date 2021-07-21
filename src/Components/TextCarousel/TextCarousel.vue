@@ -5,7 +5,7 @@
                 <hr class="w-8 border-black mx-2" />
             </slot>
         </template>
-        <span @click="textSelect($event), firstClick = true" :id="index" class="transition duration-main opacity-10 cursor-pointer" :class="firstClick ? '' : 'first:opacity-100'">
+        <span ref="textElement" @click="textSelect($event), firstClick = true" :id="index" class="transition duration-main opacity-30 cursor-pointer" :class="firstClick ? '' : 'first:opacity-100'">
             <slot :text="text">
                 {{ text }}
             </slot>
