@@ -1,7 +1,7 @@
 <template>
     <div class="space-y-10">
         <div class="fade-animation relative flex items-center h-180 w-full">
-            <Slider class="transition-all duration-500" ref="slider" :images="images" :draggable="false" @disable-arrow="disableSliderArrow" @enable-arrow="enableSliderArrow" />
+            <Slider class="transition-all duration-300" ref="slider" :images="images" :draggable="false" @disable-arrow="disableSliderArrow" @enable-arrow="enableSliderArrow" />
             <Arrow class="absolute -left-5" :disable-button="disablePreviousSliderButton" @click="prevImage" />
             <Arrow class="absolute -right-5" :disable-button="disableNextSliderButton" :direction="ArrowDirection.right" @click="nextImage" />
         </div>
@@ -68,7 +68,7 @@
             </div>
         </div>
         <div class="flex" v-in-viewport="'overflow-visible'">
-            <Carousel class="h-172 w-full duration-500"
+            <Carousel class="h-172 w-full duration-300"
                       ref="carousel"
                       v-model="carouselIndex"
                       v-model:next-button="disableNextCarouselButton"
@@ -158,7 +158,7 @@
         </div>
         <div class="relative flex items-center h-180 w-full" ref="activitySliderContainer">
             <Slider ref="activitySlider"
-                    class="transition-all duration-500"
+                    class="transition-all duration-300"
                     @changed-slider-image="changedActivitySliderImage"
                     @activity-slider-mouse-down="activitySliderMouseDown"
                     @activity-slider-mouse-moving="activitySliderMouseMoving"
@@ -177,7 +177,7 @@
             <Arrow @click="previousActivityCarouselItem" :disable-button="disablePreviousActivityCarouselButton" />
             <Carousel ref="activityCarousel"
                       id="activityCarousel"
-                      class="w-full duration-500 overflow-hidden"
+                      class="w-full duration-300 overflow-hidden"
                       @stop-slider-interval="stopSliderInterval"
                       @add-slider-interval="addSliderInterval"
                       @selected-changed="selectedChanged"
