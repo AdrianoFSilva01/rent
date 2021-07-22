@@ -24,6 +24,8 @@ export default {
                 window.addEventListener("scroll", scroll);
                 mouseFollowerX = mouseEvent.pageX;
                 mouseFollowerY = mouseEvent.pageY;
+                mouseX = mouseEvent.pageX;
+                mouseY = mouseEvent.pageY;
                 interval = setInterval(() => {
                     mouseFollowerX += (mouseX - mouseFollowerX) / 12;
                     mouseFollowerY += ((mouseY + addScrollValue) - mouseFollowerY) / 12;
