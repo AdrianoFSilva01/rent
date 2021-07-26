@@ -10,10 +10,9 @@ export default class OverlayView extends Vue {
 
         if(this.show) {
             this.transitionDelay = true;
-            document.body.classList.add("overflow-hidden");
-            document.getElementsByTagName("html")[0].style.overflowX = "visible";
+            document.getElementsByTagName("html")[0].style.overflow = "hidden";
         } else {
-            document.body.classList.remove("overflow-hidden");
+            document.getElementsByTagName("html")[0].style.overflowY = "visible";
         }
     }
 
