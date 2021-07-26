@@ -1,11 +1,11 @@
 <template>
     <div class="space-y-10">
-        <div class="fade-animation relative flex items-center h-180 w-full">
+        <div class="relative flex items-center h-180 w-full opacity-0" v-in-viewport="['fade-animation', 'opacity-100']">
             <Slider class="transition-all duration-300" ref="slider" :images="images" :draggable="false" @disable-arrow="disableSliderArrow" @enable-arrow="enableSliderArrow" />
             <Arrow class="absolute -left-5" :disable-button="disablePreviousSliderButton" @click="prevImage" />
             <Arrow class="absolute -right-5" :disable-button="disableNextSliderButton" :direction="ArrowDirection.right" @click="nextImage" />
         </div>
-        <div class="fade-animation relative flex w-full h-40 justify-center opacity-0 z-10" style="animation-delay: 0.5s">
+        <div class="relative flex w-full h-40 justify-center opacity-0 z-10" style="animation-delay: 0.5s" v-in-viewport="'fade-animation'">
             <div class="absolute flex -top-28 w-4/5 h-full bg-white border-4 border-gold items-center space-x-10 px-10">
                 <div class="dropdown-container">
                     <div class="subtitle">
@@ -67,7 +67,7 @@
                 <Arrow @click="nextCarouselItem" :disable-button="disableNextCarouselButton" :direction="ArrowDirection.right" />
             </div>
         </div>
-        <div class="flex" v-in-viewport="'overflow-visible'">
+        <div class="flex overflow-hidden" v-in-viewport="'overflow-visible'">
             <Carousel class="h-172 w-full duration-300"
                       ref="carousel"
                       v-model="carouselIndex"
@@ -156,7 +156,7 @@
                 Here, that’s no problem. But neither is going out. It’s just up to you.
             </p>
         </div>
-        <div class="relative flex items-center h-180 w-full" ref="activitySliderContainer">
+        <div class="relative flex items-center h-180 w-full" ref="activitySliderContainer" v-in-viewport="'fade-animation'">
             <Slider ref="activitySlider"
                     class="transition-all duration-300"
                     @changed-slider-image="changedActivitySliderImage"
@@ -173,7 +173,7 @@
             />
             <div class="interval-bar" ref="intervalBar" />
         </div>
-        <div class="flex overflow-hidden" v-in-viewport="'overflow-visible'">
+        <div class="flex overflow-hidden" v-in-viewport="'fade-animation'">
             <Arrow @click="previousActivityCarouselItem" :disable-button="disablePreviousActivityCarouselButton" />
             <Carousel ref="activityCarousel"
                       id="activityCarousel"
