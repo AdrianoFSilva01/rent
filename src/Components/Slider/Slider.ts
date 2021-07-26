@@ -39,6 +39,7 @@ export default class Slider extends Vue{
     emitStopInterval: boolean = true;
     onMouseUpMillisecond: number = 0;
     onMouseDownMillisecond: number = 0;
+    delayedPosition: number = -1;
 
     mounted(): void {
         this.changeOpacityMargin = (this.changeOpacityMarginPercentage / 100) * this.mainImage.offsetWidth;
@@ -407,8 +408,6 @@ export default class Slider extends Vue{
         }
     }
 
-    delayedPosition: number = -1;
-
     selectedChanging(position: number, selectedItemIndex: number): void {
         if(Math.trunc(position) < this.images.length - 1) {
             this.divsElement[Math.trunc(position) + 1].style.opacity = `${position - Math.trunc(position)}`;
@@ -447,34 +446,38 @@ export default class Slider extends Vue{
                     this.divsElement[0].appendChild(this.imagesElement[0]);
                 }, 1);
             } else {
-                this.mainImage.appendChild(this.divsElement[selectedItemIndex + 1]);
+                if(selectedItemIndex + 1 <= this.images.length - 1) {
+                    this.mainImage.appendChild(this.divsElement[selectedItemIndex + 1]);
 
-                if(this.mainImage.firstChild?.firstChild && this.mainImage.children.length > 3) {
-                    this.removeTransition(this.mainImage.firstChild as HTMLElement);
-                    this.mainImage.firstChild?.removeChild(this.mainImage.firstChild.firstChild);
-                    this.mainImage.removeChild(this.mainImage.childNodes[0]);
+                    if(this.mainImage.firstChild?.firstChild && this.mainImage.children.length > 3) {
+                        this.removeTransition(this.mainImage.firstChild as HTMLElement);
+                        this.mainImage.firstChild?.removeChild(this.mainImage.firstChild.firstChild);
+                        this.mainImage.removeChild(this.mainImage.childNodes[0]);
+                    }
+
+                    setTimeout(() => {
+                        this.divsElement[selectedItemIndex + 1].appendChild(this.imagesElement[selectedItemIndex + 1]);
+                    }, 1);
                 }
-
-                setTimeout(() => {
-                    this.divsElement[selectedItemIndex + 1].appendChild(this.imagesElement[selectedItemIndex + 1]);
-                }, 1);
             }
 
             this.delayedPosition = Math.trunc(position);
         } else if(this.delayedPosition > Math.trunc(position)) {
             if(selectedItemIndex < this.images.length - 1) {
-                this.mainImage.insertBefore(this.divsElement[selectedItemIndex - 1], this.mainImage.childNodes[0])
+                if(selectedItemIndex !== 0) {
+                    this.mainImage.insertBefore(this.divsElement[selectedItemIndex - 1], this.mainImage.childNodes[0])
 
-                if(this.mainImage.lastChild?.firstChild && this.mainImage.children.length > 3) {
-                    this.removeTransition(this.mainImage.lastChild as HTMLElement);
-                    this.mainImage.lastChild.removeChild(this.mainImage.lastChild.firstChild);
-                    this.mainImage.removeChild(this.mainImage.lastChild);
+                    if(this.mainImage.lastChild?.firstChild && this.mainImage.children.length > 3) {
+                        this.removeTransition(this.mainImage.lastChild as HTMLElement);
+                        this.mainImage.lastChild.removeChild(this.mainImage.lastChild.firstChild);
+                        this.mainImage.removeChild(this.mainImage.lastChild);
+                    }
+
+                    setTimeout(() => {
+                        this.divsElement[selectedItemIndex - 1].appendChild(this.imagesElement[selectedItemIndex - 1]);
+                        this.divsElement[selectedItemIndex - 1].style.opacity = "1";
+                    }, 1);
                 }
-
-                setTimeout(() => {
-                    this.divsElement[selectedItemIndex - 1].appendChild(this.imagesElement[selectedItemIndex - 1]);
-                    this.divsElement[selectedItemIndex - 1].style.opacity = "1";
-                }, 1);
             } else {
                 if(!this.divsElement[selectedItemIndex - 1].firstChild) {
                     if(this.mainImage.firstChild?.firstChild) {
