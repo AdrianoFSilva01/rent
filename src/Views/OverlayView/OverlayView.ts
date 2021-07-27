@@ -12,7 +12,7 @@ export default class OverlayView extends Vue {
             this.transitionDelay = true;
             document.getElementsByTagName("html")[0].style.overflow = "hidden";
         } else {
-            document.getElementsByTagName("html")[0].style.overflowY = "visible";
+            document.getElementsByTagName("html")[0].style.overflow = "visible";
         }
     }
 
