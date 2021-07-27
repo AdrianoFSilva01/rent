@@ -418,7 +418,7 @@ export default class Slider extends Vue{
             if(!this.divsElement[this.images.length - 1].firstChild) {
                 this.mainImage.appendChild(this.divsElement[this.images.length - 1]);
 
-                if(this.mainImage.firstChild?.firstChild && this.mainImage.children.length > 3) {
+                if(this.mainImage.children.length > 3 && this.mainImage.firstChild?.firstChild) {
                     this.removeTransition(this.mainImage.firstChild as HTMLElement);
                     this.mainImage.firstChild?.removeChild(this.mainImage.firstChild.firstChild);
                     this.mainImage.removeChild(this.mainImage.childNodes[0]);
@@ -483,7 +483,7 @@ export default class Slider extends Vue{
                 }
             } else {
                 if(!this.divsElement[selectedItemIndex - 1].firstChild) {
-                    if(this.mainImage.firstChild?.firstChild) {
+                    if(this.mainImage.firstChild?.firstChild && this.mainImage.children.length > 3) {
                         this.removeTransition(this.mainImage.lastChild as HTMLElement);
                         this.mainImage.firstChild.removeChild(this.mainImage.firstChild.firstChild);
                         this.mainImage.removeChild(this.mainImage.firstChild);
@@ -521,7 +521,7 @@ export default class Slider extends Vue{
         this.delayedPosition = -1;
 
         if(this.divsElement[index] === this.mainImage.lastChild) {
-            if(this.mainImage.firstChild?.firstChild) {
+            if(this.mainImage.firstChild?.firstChild && this.mainImage.children.length > 3) {
                 this.removeTransition(this.mainImage.firstChild as HTMLElement);
                 this.mainImage.firstChild?.removeChild(this.mainImage.firstChild.firstChild);
                 this.mainImage.removeChild(this.mainImage.childNodes[0]);
@@ -540,8 +540,10 @@ export default class Slider extends Vue{
                     this.divsElement[index + 1].appendChild(this.imagesElement[index + 1]);
                 }, 1);
             }
+
+            index === 0 ? this.divsElement[this.images.length - 1].style.opacity = "1" : this.divsElement[index - 1].style.opacity = "1";
         } else if(this.divsElement[index] === this.mainImage.firstChild) {
-            if(this.mainImage.lastChild?.firstChild) {
+            if(this.mainImage.lastChild?.firstChild && this.mainImage.children.length > 3) {
                 this.removeTransition(this.mainImage.lastChild as HTMLElement);
                 this.mainImage.lastChild.removeChild(this.mainImage.lastChild.firstChild);
                 this.mainImage.removeChild(this.mainImage.lastChild);
