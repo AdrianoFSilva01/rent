@@ -411,7 +411,9 @@ export default class Slider extends Vue{
 
     selectedChanging(position: number, selectedItemIndex: number): void {
         if(Math.trunc(position) < this.images.length - 1) {
-            this.divsElement[Math.trunc(position) + 1].style.opacity = `${position - Math.trunc(position)}`;
+            if(Math.trunc(position) + 1 > 0) {
+                this.divsElement[Math.trunc(position) + 1].style.opacity = `${position - Math.trunc(position)}`;
+            }
         } else if(Math.trunc(position) === this.images.length - 1) {
             if(!this.divsElement[this.images.length - 1].firstChild) {
                 this.mainImage.appendChild(this.divsElement[this.images.length - 1]);
@@ -538,9 +540,7 @@ export default class Slider extends Vue{
                     this.divsElement[index + 1].appendChild(this.imagesElement[index + 1]);
                 }, 1);
             }
-        }
-
-        if(this.divsElement[index] === this.mainImage.firstChild) {
+        } else if(this.divsElement[index] === this.mainImage.firstChild) {
             if(this.mainImage.lastChild?.firstChild) {
                 this.removeTransition(this.mainImage.lastChild as HTMLElement);
                 this.mainImage.lastChild.removeChild(this.mainImage.lastChild.firstChild);
@@ -562,6 +562,39 @@ export default class Slider extends Vue{
                     this.divsElement[index - 1].style.opacity = "1";
                 }, 1);
             }
+        }
+
+        if(!this.divsElement[index].firstChild) {
+            const nextImage: number = index + 1 > this.images.length - 1 ? 0 : index + 1;
+            const previousImage: number = index - 1 < 0 ? this.images.length - 1 : index - 1;
+
+            if(this.mainImage.children.length > 3 && this.mainImage.children[0].firstChild && this.mainImage.children[1].firstChild) {
+                this.removeTransition(this.mainImage.children[0] as HTMLElement);
+                this.mainImage.children[0].removeChild(this.mainImage.children[0].firstChild);
+                this.mainImage.removeChild(this.mainImage.children[0]);
+                this.removeTransition(this.mainImage.children[1] as HTMLElement);
+                this.mainImage.children[1].removeChild(this.mainImage.children[1].firstChild);
+                this.mainImage.removeChild(this.mainImage.children[1]);
+            } else if(this.mainImage.children[0].firstChild) {
+                this.removeTransition(this.mainImage.children[0] as HTMLElement);
+                this.mainImage.children[0].removeChild(this.mainImage.children[0].firstChild);
+                this.mainImage.removeChild(this.mainImage.children[0]);
+            }
+
+            this.mainImage.insertBefore(this.divsElement[previousImage], this.mainImage.childNodes[0]);
+            this.mainImage.insertBefore(this.divsElement[index], this.mainImage.childNodes[1]);
+            this.divsElement[index].style.opacity = "1";
+            this.mainImage.insertBefore(this.divsElement[nextImage], this.mainImage.childNodes[2]);
+            this.divsElement[nextImage].style.opacity = "0";
+
+            setTimeout(() => {
+                this.divsElement[index].appendChild(this.imagesElement[index]);
+                this.divsElement[nextImage].appendChild(this.imagesElement[nextImage]);
+                this.divsElement[previousImage].appendChild(this.imagesElement[previousImage]);
+                this.divsElement[previousImage].style.opacity = "1";
+            }, 1);
+
+            this.addTransition(this.mainImage.children[this.mainImage.children.length - 1] as HTMLElement, 0);
         }
 
         this.addTransition(this.divsElement[index], 1);
