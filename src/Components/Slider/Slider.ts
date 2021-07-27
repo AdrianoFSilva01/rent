@@ -336,7 +336,6 @@ export default class Slider extends Vue{
                     : this.divsElement[index - 1].style.opacity = "1";
 
                 this.divsElement[index].style.opacity = "1";
-
                 this.addTransition(this.divsElement[this.mainImageIndex], 0);
 
                 if(this.mainImage.lastChild?.firstChild){
@@ -401,7 +400,9 @@ export default class Slider extends Vue{
 
                 this.divsElement[index].style.opacity = "1";
 
-                this.addTransition(this.divsElement[this.mainImageIndex], 0);
+                if(this.divsElement[index] !== this.divsElement[this.mainImageIndex]) {
+                    this.addTransition(this.divsElement[this.mainImageIndex], 0);
+                }
             }
 
             this.mainImageIndex = index;
@@ -567,6 +568,8 @@ export default class Slider extends Vue{
         if(this.divsElement[index] !== this.mainImage.lastChild) {
             this.addTransition(this.mainImage.lastChild as HTMLElement, 0);
         }
+
+        this.mainImageIndex = index;
     }
 
     addTransition(element: HTMLElement, opacity: number): void {
