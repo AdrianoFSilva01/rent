@@ -73,14 +73,14 @@ export default class Main<T> extends Vue{
         ["Climbing", "https://www.pixel4k.com/wp-content/uploads/2018/10/girl-mountain-climber-5k_1538786999.jpg"],
         ["Golf", "https://i.pinimg.com/originals/c6/ca/1f/c6ca1f1c86f0c6c037a38df6b3754be2.jpg"],
         ["Jeep Tours", "https://adrenalineportugal.com/wp-content/uploads/2020/02/Our-fun-filled-Arrabida-Jeep-Tour.jpg"],
-        ["Sup Tours", "https://suptarifa.com/wp-content/uploads/2019/03/4k-wallpaper-adventure-beach-165505.jpg"],
+        ["Sup Tours", "https://www.seabookings.com/photos/original/5969-sup-tours-in-benagil-1594651553-jpg"],
         ["Surf", "https://wallpaperaccess.com/full/1303332.jpg"]];
     activitiesImages: Array<string>  = ["https://wallpaperaccess.com/full/428865.jpg",
         "https://www.wallpapers13.com/wp-content/uploads/2020/02/With-Bicycle-all-over-the-world-Mountain-bike-trails-4K-ultra-HD-Wallpaper-1920x1080.jpg",
         "https://www.pixel4k.com/wp-content/uploads/2018/10/girl-mountain-climber-5k_1538786999.jpg",
         "https://i.pinimg.com/originals/c6/ca/1f/c6ca1f1c86f0c6c037a38df6b3754be2.jpg",
         "https://adrenalineportugal.com/wp-content/uploads/2020/02/Our-fun-filled-Arrabida-Jeep-Tour.jpg",
-        "https://suptarifa.com/wp-content/uploads/2019/03/4k-wallpaper-adventure-beach-165505.jpg",
+        "https://www.seabookings.com/photos/original/5969-sup-tours-in-benagil-1594651553-jpg",
         "https://wallpaperaccess.com/full/1303332.jpg"];
     activitiesCarouselIndex: number = 0;
     activityCarouselBeingDragged: boolean = false;
