@@ -144,20 +144,24 @@ export default class Carousel extends Vue {
         this.relativeElement.style.cursor = "grabbing";
         this.mouseMoved = true;
 
+        let selectedItem: number = 0;
+
         if(this.finalPosition) {
             this.translateX(this.finalPosition + (mouseEvent.clientX - this.firstClickValue));
-            this.selectedItemIndex = Math.round((this.inicialPosition - (this.finalPosition + (mouseEvent.clientX - this.firstClickValue))) / this.childElementWidth);
+            selectedItem = Math.round((this.inicialPosition - (this.finalPosition + (mouseEvent.clientX - this.firstClickValue))) / this.childElementWidth);
         } else {
             this.translateX(this.finalPosition + this.inicialPosition + (mouseEvent.clientX - this.firstClickValue));
-            this.selectedItemIndex = Math.round((this.finalPosition + (this.firstClickValue - mouseEvent.clientX)) / this.childElementWidth);
+            selectedItem = Math.round((this.finalPosition + (this.firstClickValue - mouseEvent.clientX)) / this.childElementWidth);
         }
 
         this.checkExtremes(mouseEvent);
 
-        if(this.selectedItemIndex < 0) {
+        if(selectedItem < 0) {
             this.selectedItemIndex = 0
-        } else if(this.selectedItemIndex > this.absoluteElement.children.length - 1) {
+        } else if(selectedItem > this.absoluteElement.children.length - 1) {
             this.selectedItemIndex = this.absoluteElement.children.length - 1;
+        } else {
+            this.selectedItemIndex = selectedItem;
         }
 
         this.$emit("activity-carousel-mouse-moving", this.inicialPosition - this.getTranslateX(this.absoluteElement), this.selectedItemIndex);
