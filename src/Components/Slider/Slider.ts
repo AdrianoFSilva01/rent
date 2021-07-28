@@ -529,15 +529,35 @@ export default class Slider extends Vue{
 
             if(index === this.images.length - 1) {
                 this.mainImage.appendChild(this.divsElement[0]);
+                this.removeTransitionButOpacity(this.divsElement[0]);
 
                 setTimeout(() => {
                     this.divsElement[0].appendChild(this.imagesElement[0]);
                 }, 1);
             } else {
                 this.mainImage.appendChild(this.divsElement[index + 1]);
+                this.removeTransitionButOpacity(this.divsElement[index + 1]);
 
                 setTimeout(() => {
                     this.divsElement[index + 1].appendChild(this.imagesElement[index + 1]);
+                }, 1);
+            }
+
+            if(this.mainImage.firstChild?.firstChild && this.mainImage.children.length > 3) {
+                this.removeTransition(this.mainImage.firstChild as HTMLElement);
+                this.mainImage.firstChild?.removeChild(this.mainImage.firstChild.firstChild);
+                this.mainImage.removeChild(this.mainImage.childNodes[0]);
+            }
+
+            if(this.mainImage.firstChild !== this.divsElement[index - 1] && this.mainImage.firstChild?.firstChild) {
+                this.removeTransition(this.mainImage.firstChild as HTMLElement);
+                this.mainImage.firstChild?.removeChild(this.mainImage.firstChild.firstChild);
+                this.mainImage.removeChild(this.mainImage.childNodes[0]);
+
+                this.mainImage.insertBefore(this.divsElement[index - 1], this.mainImage.childNodes[0]);
+
+                setTimeout(() => {
+                    this.divsElement[index - 1].appendChild(this.imagesElement[index - 1]);
                 }, 1);
             }
 
@@ -563,6 +583,12 @@ export default class Slider extends Vue{
                     this.divsElement[index - 1].appendChild(this.imagesElement[index - 1]);
                     this.divsElement[index - 1].style.opacity = "1";
                 }, 1);
+            }
+
+            if(this.mainImage.lastChild?.firstChild && this.mainImage.children.length > 3) {
+                this.removeTransition(this.mainImage.lastChild as HTMLElement);
+                this.mainImage.lastChild.removeChild(this.mainImage.lastChild.firstChild);
+                this.mainImage.removeChild(this.mainImage.lastChild);
             }
         }
 
@@ -599,8 +625,12 @@ export default class Slider extends Vue{
             this.addTransition(this.mainImage.children[this.mainImage.children.length - 1] as HTMLElement, 0);
         }
 
-        this.addTransition(this.divsElement[index], 1);
-        if(this.divsElement[index] !== this.mainImage.lastChild) {
+
+        if(this.divsElement[index].style.opacity < "1") {
+            this.addTransition(this.divsElement[index], 1);
+        }
+
+        if(this.divsElement[index] !== this.mainImage.lastChild && (this.mainImage.lastChild as HTMLElement).style.opacity > "0") {
             this.addTransition(this.mainImage.lastChild as HTMLElement, 0);
         }
 
