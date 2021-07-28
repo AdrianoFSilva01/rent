@@ -144,27 +144,23 @@ export default class Carousel extends Vue {
         this.relativeElement.style.cursor = "grabbing";
         this.mouseMoved = true;
 
-        let selectedItemRounded: number = 0;
-
         if(this.finalPosition) {
             this.translateX(this.finalPosition + (mouseEvent.clientX - this.firstClickValue));
-            selectedItemRounded = Math.round((this.inicialPosition - (this.finalPosition + (mouseEvent.clientX - this.firstClickValue))) / this.childElementWidth);
-            this.selectedItemIndex = selectedItemRounded;
+            this.selectedItemIndex = Math.round((this.inicialPosition - (this.finalPosition + (mouseEvent.clientX - this.firstClickValue))) / this.childElementWidth);
         } else {
             this.translateX(this.finalPosition + this.inicialPosition + (mouseEvent.clientX - this.firstClickValue));
-            selectedItemRounded = Math.round((this.finalPosition + (this.firstClickValue - mouseEvent.clientX)) / this.childElementWidth);
-            this.selectedItemIndex = selectedItemRounded;
+            this.selectedItemIndex = Math.round((this.finalPosition + (this.firstClickValue - mouseEvent.clientX)) / this.childElementWidth);
         }
 
         this.checkExtremes(mouseEvent);
 
-        if(selectedItemRounded < 0) {
-            selectedItemRounded = 0
-        } else if(selectedItemRounded > this.absoluteElement.children.length - 1) {
-            selectedItemRounded = this.absoluteElement.children.length - 1;
+        if(this.selectedItemIndex < 0) {
+            this.selectedItemIndex = 0
+        } else if(this.selectedItemIndex > this.absoluteElement.children.length - 1) {
+            this.selectedItemIndex = this.absoluteElement.children.length - 1;
         }
 
-        this.$emit("activity-carousel-mouse-moving", this.inicialPosition - this.getTranslateX(this.absoluteElement), selectedItemRounded);
+        this.$emit("activity-carousel-mouse-moving", this.inicialPosition - this.getTranslateX(this.absoluteElement), this.selectedItemIndex);
     }
 
     move(value: number): void {
@@ -202,14 +198,8 @@ export default class Carousel extends Vue {
                 this.translateX(this.rightExtreme);
                 this.$emit("activity-carousel-mouse-up", this.absoluteElement.children.length - 1);
             } else {
-                const closestElementPosition: number = this.getClosestAlignedElementPosition();
-                if (closestElementPosition >= this.rightExtreme) {
-                    this.selectedItemIndex = (this.inicialPosition - closestElementPosition) / this.childElementWidth;
-                    this.translateX(closestElementPosition);
-                    this.$emit("activity-carousel-mouse-up", (this.inicialPosition - closestElementPosition) / this.childElementWidth);
-                } else {
-                    this.translateX(this.rightExtreme);
-                }
+                this.translateX(this.inicialPosition - this.selectedItemIndex * this.childElementWidth);
+                this.$emit("activity-carousel-mouse-up", this.selectedItemIndex);
             }
 
             this.$emit("disable-arrow");
