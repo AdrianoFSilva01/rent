@@ -467,7 +467,7 @@ export default class Slider extends Vue{
             this.delayedPosition = Math.trunc(position);
         } else if(this.delayedPosition > Math.trunc(position)) {
             if(selectedItemIndex < this.images.length - 1) {
-                if(selectedItemIndex !== 0) {
+                if(selectedItemIndex > 0) {
                     this.mainImage.insertBefore(this.divsElement[selectedItemIndex - 1], this.mainImage.childNodes[0])
 
                     if(this.mainImage.lastChild?.firstChild && this.mainImage.children.length > 3) {
