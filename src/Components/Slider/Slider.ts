@@ -599,44 +599,104 @@ export default class Slider extends Vue{
                 }, 1);
             }
 
-            if(this.mainImage.lastChild?.firstChild && this.mainImage.children.length > 3) {
+            for(let image: number = 0; image < this.mainImage.children.length - 3; image++) {
+                if(this.mainImage.lastChild?.firstChild) {
+                    this.removeTransition(this.mainImage.lastChild as HTMLElement);
+                    this.mainImage.lastChild.removeChild(this.mainImage.lastChild.firstChild);
+                    this.mainImage.removeChild(this.mainImage.lastChild);
+                }
+            }
+
+            const nextImage: number = index === this.images.length - 1 ? 0 : index + 1;
+
+            if(this.divsElement[nextImage] !== this.mainImage.lastChild && this.mainImage.lastChild?.firstChild) {
                 this.removeTransition(this.mainImage.lastChild as HTMLElement);
                 this.mainImage.lastChild.removeChild(this.mainImage.lastChild.firstChild);
                 this.mainImage.removeChild(this.mainImage.lastChild);
+
+                this.mainImage.appendChild(this.divsElement[nextImage]);
+                this.removeTransition(this.divsElement[nextImage]);
+
+                setTimeout(() => {
+                    this.divsElement[nextImage].appendChild(this.imagesElement[nextImage]);
+                }, 1);
             }
-        }
+        } else {
+            const beforeIndex: number = index === 0 ? this.images.length - 1 : index - 1;
+            const nextIndex: number = index === this.images.length - 1 ? 0 : index + 1;
 
-        if(!this.divsElement[index].firstChild) {
-            const nextImage: number = index + 1 > this.images.length - 1 ? 0 : index + 1;
-            const previousImage: number = index - 1 < 0 ? this.images.length - 1 : index - 1;
+            this.divsElement[beforeIndex].style.opacity = "1";
 
-            if(this.mainImage.children.length > 3 && this.mainImage.children[0].firstChild && this.mainImage.children[1].firstChild) {
-                this.removeTransition(this.mainImage.children[0] as HTMLElement);
-                this.mainImage.children[0].removeChild(this.mainImage.children[0].firstChild);
-                this.mainImage.removeChild(this.mainImage.children[0]);
-                this.removeTransition(this.mainImage.children[1] as HTMLElement);
-                this.mainImage.children[1].removeChild(this.mainImage.children[1].firstChild);
-                this.mainImage.removeChild(this.mainImage.children[1]);
-            } else if(this.mainImage.children[0].firstChild) {
-                this.removeTransition(this.mainImage.children[0] as HTMLElement);
-                this.mainImage.children[0].removeChild(this.mainImage.children[0].firstChild);
-                this.mainImage.removeChild(this.mainImage.children[0]);
+            if(!this.divsElement[index].firstChild) {
+                this.removeTransition(this.divsElement[index]);
+                this.divsElement[index].style.opacity = "1";
+
+                if(this.mainImage.children[1] === this.divsElement[index]) {
+                    setTimeout(() => {
+                        this.divsElement[index].appendChild(this.imagesElement[index]);
+                    }, 1);
+                }
+                else {
+                    if(this.mainImage.children.length > 2 && this.mainImage.lastChild?.firstChild) {
+                        this.removeTransition(this.mainImage.lastChild as HTMLElement);
+                        this.mainImage.lastChild.removeChild(this.mainImage.lastChild.firstChild);
+                        this.mainImage.removeChild(this.mainImage.lastChild);
+                    }
+
+                    this.mainImage.insertBefore(this.divsElement[index], this.mainImage.childNodes[1]);
+
+                    setTimeout(() => {
+                        this.divsElement[index].appendChild(this.imagesElement[index]);
+                    }, 1);
+                }
             }
 
-            this.mainImage.insertBefore(this.divsElement[previousImage], this.mainImage.childNodes[0]);
-            this.mainImage.insertBefore(this.divsElement[index], this.mainImage.childNodes[1]);
-            this.divsElement[index].style.opacity = "1";
-            this.mainImage.insertBefore(this.divsElement[nextImage], this.mainImage.childNodes[2]);
-            this.divsElement[nextImage].style.opacity = "0";
+            if(!this.divsElement[beforeIndex].firstChild || this.mainImage.firstChild !== this.divsElement[beforeIndex]) {
+                this.removeTransitionButOpacity(this.divsElement[beforeIndex]);
 
-            setTimeout(() => {
-                this.divsElement[index].appendChild(this.imagesElement[index]);
-                this.divsElement[nextImage].appendChild(this.imagesElement[nextImage]);
-                this.divsElement[previousImage].appendChild(this.imagesElement[previousImage]);
-                this.divsElement[previousImage].style.opacity = "1";
-            }, 1);
+                if(this.mainImage.firstChild === this.divsElement[beforeIndex]) {
+                    setTimeout(() => {
+                        this.divsElement[beforeIndex].appendChild(this.imagesElement[beforeIndex]);
+                        this.divsElement[beforeIndex].style.opacity = "1";
+                    }, 1);
+                } else {
+                    if(this.mainImage.firstChild?.firstChild) {
+                        this.removeTransition(this.mainImage.firstChild as HTMLElement);
+                        this.mainImage.firstChild.removeChild(this.mainImage.firstChild.firstChild);
+                        this.mainImage.removeChild(this.mainImage.firstChild);
+                    }
 
-            this.addTransition(this.mainImage.children[this.mainImage.children.length - 1] as HTMLElement, 0);
+                    this.mainImage.insertBefore(this.divsElement[beforeIndex], this.mainImage.childNodes[0])
+
+                    setTimeout(() => {
+                        this.divsElement[beforeIndex].appendChild(this.imagesElement[beforeIndex]);
+                        this.divsElement[beforeIndex].style.opacity = "1";
+                    }, 1);
+                }
+            }
+
+            if(!this.divsElement[nextIndex].firstChild || this.mainImage.lastChild !== this.divsElement[nextIndex]) {
+
+                this.removeTransition(this.divsElement[nextIndex]);
+
+                if(this.mainImage.lastChild === this.divsElement[nextIndex]) {
+                    setTimeout(() => {
+                        this.divsElement[nextIndex].appendChild(this.imagesElement[nextIndex]);
+                    }, 1);
+                } else {
+                    if(this.mainImage.lastChild?.firstChild) {
+                        this.removeTransition(this.mainImage.lastChild as HTMLElement);
+                        this.mainImage.lastChild.removeChild(this.mainImage.lastChild.firstChild);
+                        this.mainImage.removeChild(this.mainImage.lastChild);
+                    }
+
+                    this.mainImage.appendChild(this.divsElement[nextIndex]);
+
+                    setTimeout(() => {
+                        this.divsElement[nextIndex].appendChild(this.imagesElement[nextIndex]);
+                    }, 1);
+                }
+            }
         }
 
         if(this.divsElement[index].style.opacity === "1" && (this.mainImage.lastChild as HTMLElement).style.opacity <= "0") {
