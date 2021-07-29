@@ -185,7 +185,8 @@ export default class Carousel extends Vue {
                 this.transitionEnded = true;
                 this.relativeElement.style.cursor = "grab";
                 this.absoluteElement.style.pointerEvents = "auto";
-                this.$emit("add-slider-interval");
+                this.finalPosition = this.getTranslateX(this.absoluteElement);
+                this.$emit("activity-carousel-mouse-up", this.selectedItemIndex);
             } else if(this.isExtremeLeft(translateX)) {
                 this.selectedItemIndex = 0;
                 this.translateX(this.inicialPosition);
