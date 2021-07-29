@@ -649,6 +649,9 @@ export default class Slider extends Vue{
             this.addTransition(this.mainImage.children[this.mainImage.children.length - 1] as HTMLElement, 0);
         }
 
+        if(this.divsElement[index].style.opacity === "1" && (this.mainImage.lastChild as HTMLElement).style.opacity <= "0") {
+            this.addInterval();
+        }
 
         if(this.divsElement[index].style.opacity < "1") {
             this.addTransition(this.divsElement[index], 1);

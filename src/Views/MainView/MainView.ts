@@ -208,7 +208,6 @@ export default class Main<T> extends Vue{
     }
 
     activitySliderMouseUp(): void {
-        this.activityCarousel.addInterval = true;
         this.activityCarousel.AlignByIndex(this.activityCarousel.selectedItemIndex);
     }
 

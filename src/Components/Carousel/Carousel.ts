@@ -48,7 +48,6 @@ export default class Carousel extends Vue {
     selectedChangedEnterIndex: number = -1;
     onMouseDownMillisecond: number = 0;
     onMouseUpMillisecond: number = 0;
-    addInterval: boolean = false;
 
     mounted(): void {
         this.transitionDuration = parseFloat(window.getComputedStyle(this.$el).transitionDuration);
@@ -75,10 +74,6 @@ export default class Carousel extends Vue {
                 this.changeFinalPosition = false;
                 this.finalPosition = this.getTranslateX(this.absoluteElement);
                 this.selectedChangedEnterIndex = -1;
-                if(this.addInterval) {
-                    this.$emit("add-slider-interval");
-                    this.addInterval = false;
-                }
                 this.$emit("enable-arrow", this.disableNextButton, this.disablePreviousButton);
             }
         })
@@ -193,12 +188,10 @@ export default class Carousel extends Vue {
                 this.$emit("add-slider-interval");
             } else if(this.isExtremeLeft(translateX)) {
                 this.selectedItemIndex = 0;
-                this.addInterval = true;
                 this.translateX(this.inicialPosition);
                 this.$emit("activity-carousel-mouse-up", 0);
             } else if(this.isExtremeRight(translateX)) {
                 this.selectedItemIndex = this.absoluteElement.children.length - 1;
-                this.addInterval = true;
                 this.translateX(this.rightExtreme);
                 this.$emit("activity-carousel-mouse-up", this.absoluteElement.children.length - 1);
             } else {
