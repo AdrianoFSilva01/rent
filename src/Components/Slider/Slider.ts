@@ -521,8 +521,6 @@ export default class Slider extends Vue{
         this.delayedPosition = -1;
 
         if(this.divsElement[index] === this.mainImage.lastChild) {
-            console.log("a");
-
             if(this.mainImage.firstChild?.firstChild && this.mainImage.children.length > 3) {
                 this.removeTransition(this.mainImage.firstChild as HTMLElement);
                 this.mainImage.firstChild?.removeChild(this.mainImage.firstChild.firstChild);
@@ -579,7 +577,6 @@ export default class Slider extends Vue{
 
             index === 0 ? this.divsElement[this.images.length - 1].style.opacity = "1" : this.divsElement[index - 1].style.opacity = "1";
         } else if(this.divsElement[index] === this.mainImage.firstChild) {
-            console.log("b");
             if(this.mainImage.lastChild?.firstChild && this.mainImage.children.length > 3) {
                 this.removeTransition(this.mainImage.lastChild as HTMLElement);
                 this.mainImage.lastChild.removeChild(this.mainImage.lastChild.firstChild);
@@ -607,16 +604,9 @@ export default class Slider extends Vue{
                 this.mainImage.lastChild.removeChild(this.mainImage.lastChild.firstChild);
                 this.mainImage.removeChild(this.mainImage.lastChild);
             }
-        } else {
-            console.log("c");
-            console.log(this.mainImage.children.length);
-            console.log(this.mainImage.firstChild?.firstChild, "firstChild");
-            console.log(this.mainImage.children[1]?.firstChild, "secondChild");
-            console.log(this.mainImage.lastChild?.firstChild, "lastChild");
         }
 
         if(!this.divsElement[index].firstChild) {
-            console.log("d");
             const nextImage: number = index + 1 > this.images.length - 1 ? 0 : index + 1;
             const previousImage: number = index - 1 < 0 ? this.images.length - 1 : index - 1;
 
