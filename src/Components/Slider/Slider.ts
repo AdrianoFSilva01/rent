@@ -412,6 +412,24 @@ export default class Slider extends Vue{
     selectedChanging(position: number, selectedItemIndex: number): void {
         if(Math.trunc(position) < this.images.length - 1) {
             if(Math.trunc(position) + 1 > 0) {
+                if(Math.trunc(position) === 0 && !this.divsElement[0].firstChild) {
+                    this.mainImage.insertBefore(this.divsElement[0], this.mainImage.childNodes[1]);
+                    this.divsElement[0].style.opacity = "1";
+
+                    if(this.mainImage.children.length > 3 && this.mainImage.lastChild?.firstChild) {
+                        this.removeTransition(this.mainImage.lastChild as HTMLElement);
+                        this.mainImage.lastChild?.removeChild(this.mainImage.lastChild.firstChild);
+                        this.mainImage.removeChild(this.mainImage.lastChild);
+                    }
+
+                    setTimeout(() => {
+                        this.divsElement[0].appendChild(this.imagesElement[0]);
+                    }, 1);
+
+                    (this.mainImage.firstChild as HTMLElement).style.opacity = "0";
+                    (this.mainImage.lastChild as HTMLElement).style.opacity = "0";
+                }
+
                 this.divsElement[Math.trunc(position) + 1].style.opacity = `${position - Math.trunc(position)}`;
             }
         } else if(Math.trunc(position) === this.images.length - 1) {
