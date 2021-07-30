@@ -8,13 +8,28 @@
                 </div>
                 <div class="space-y-4">
                     <template v-for="(text, index) in ['Apartments', 'Contact & Directions', 'Our House', 'Impressions']" :key="index">
-                        <p class="main-information transform"
-                           :ontransitionend="changeDelay"
-                           :style="transitionDelay ? 'transition-delay: ' + (50 * index) + 'ms' : 'transition-delay: 0s'"
-                           :class="transitionEnded ? 'translate-x-0 opacity-100':'-translate-x-8 opacity-0'"
-                        >
-                            {{ text }}
-                        </p>
+                        <template v-if="text === 'Apartments'">
+                            <router-link to="/apartments">
+                                <p class="main-information transform"
+                                   :ontransitionend="changeDelay"
+                                   :style="transitionDelay ? 'transition-delay: ' + (50 * index) + 'ms' : 'transition-delay: 0s'"
+                                   :class="transitionEnded ? 'translate-x-0 opacity-100':'-translate-x-8 opacity-0'"
+                                   @click="toogleDisplay"
+                                >
+                                    {{ text }}
+                                </p>
+                                <router-link to="/apartments" />
+                            </router-link>
+                        </template>
+                        <template v-else>
+                            <p class="main-information transform"
+                               :ontransitionend="changeDelay"
+                               :style="transitionDelay ? 'transition-delay: ' + (50 * index) + 'ms' : 'transition-delay: 0s'"
+                               :class="transitionEnded ? 'translate-x-0 opacity-100':'-translate-x-8 opacity-0'"
+                            >
+                                {{ text }}
+                            </p>
+                        </template>
                     </template>
                 </div>
                 <div>

@@ -30,7 +30,9 @@
                     </span>
                 </div>
                 <div class="space-y-2">
-                    <UnderlineText class="text-sm text-white" text="Apartments" />
+                    <router-link to="/apartments" @click="backToTop">
+                        <UnderlineText class="text-sm text-white" text="Apartments" />
+                    </router-link>
                     <UnderlineText class="text-sm text-white" text="Our House" />
                 </div>
                 <div class="space-y-2">
