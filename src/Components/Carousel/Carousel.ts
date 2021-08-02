@@ -48,6 +48,7 @@ export default class Carousel extends Vue {
     selectedChangedEnterIndex: number = -1;
     onMouseDownMillisecond: number = 0;
     onMouseUpMillisecond: number = 0;
+    addSliderInterval: boolean = false;
 
     mounted(): void {
         this.transitionDuration = parseFloat(window.getComputedStyle(this.$el).transitionDuration);
@@ -75,6 +76,10 @@ export default class Carousel extends Vue {
                 this.finalPosition = this.getTranslateX(this.absoluteElement);
                 this.selectedChangedEnterIndex = -1;
                 this.$emit("enable-arrow", this.disableNextButton, this.disablePreviousButton);
+                if(this.addSliderInterval) {
+                    this.$emit("add-slider-interval");
+                    this.addSliderInterval = false;
+                }
             }
         })
 

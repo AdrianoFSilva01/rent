@@ -165,7 +165,7 @@ export default class Slider extends Vue{
                     ((this.$el as HTMLElement).firstElementChild as HTMLElement).style.pointerEvents = "auto";
                 }
             } else {
-                this.$emit("activity-slider-mouse-up");
+                this.$emit("activity-slider-mouse-up", true);
             }
         }
 
