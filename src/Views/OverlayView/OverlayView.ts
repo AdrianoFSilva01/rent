@@ -1,5 +1,10 @@
-import { Vue } from "vue-class-component";
+import { Options, Vue } from "vue-class-component";
 
+@Options({
+    emits: [
+        "scroll-to-top"
+    ]
+})
 export default class OverlayView extends Vue {
     show: boolean = false;
     transitionEnded: boolean = false;
@@ -18,5 +23,12 @@ export default class OverlayView extends Vue {
 
     changeDelay(): void {
         this.transitionDelay = false;
+    }
+
+    backToTop(): void {
+        document.documentElement.scrollTop = 0;
+        if(window.scrollY !== 0) {
+            this.$emit("scroll-to-top");
+        }
     }
 }

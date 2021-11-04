@@ -9,7 +9,7 @@
                 <div class="space-y-4">
                     <template v-for="(text, index) in ['Apartments', 'Contact & Directions', 'Our House', 'Impressions']" :key="index">
                         <template v-if="text === 'Apartments'">
-                            <router-link to="/apartments">
+                            <router-link to="/apartments" @click="backToTop">
                                 <p class="main-information transform"
                                    :ontransitionend="changeDelay"
                                    :style="transitionDelay ? 'transition-delay: ' + (50 * index) + 'ms' : 'transition-delay: 0s'"
@@ -18,9 +18,20 @@
                                 >
                                     {{ text }}
                                 </p>
-                                <router-link to="/apartments" />
                             </router-link>
                         </template>
+                        <temaplate v-else-if="text === 'Our House'">
+                            <router-link to="/ourhouse" @click="backToTop">
+                                <p class="main-information transform mt-4"
+                                   :ontransitionend="changeDelay"
+                                   :style="transitionDelay ? 'transition-delay: ' + (50 * index) + 'ms' : 'transition-delay: 0s'"
+                                   :class="transitionEnded ? 'translate-x-0 opacity-100':'-translate-x-8 opacity-0'"
+                                   @click="toogleDisplay"
+                                >
+                                    {{ text }}
+                                </p>
+                            </router-link>
+                        </temaplate>
                         <template v-else>
                             <p class="main-information transform"
                                :ontransitionend="changeDelay"
