@@ -9,7 +9,10 @@ import { Ref } from "vue-property-decorator";
         Input,
         WaveButton,
         UnderlineText
-    }
+    },
+    emits: [
+        "scroll-to-top"
+    ]
 })
 export default class FooterView extends Vue {
     @Ref() checkbox!: HTMLElement;
@@ -40,5 +43,6 @@ export default class FooterView extends Vue {
 
     backToTop(): void {
         document.documentElement.scrollTop = 0;
+        this.$emit("scroll-to-top");
     }
 }
