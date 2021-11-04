@@ -45,7 +45,8 @@ export default {
         });
 
         el.addEventListener("mouseleave", () => {
-            if (mouseFollower) {
+            if(mouseFollower) {
+                scrollY = 0;
                 window.removeEventListener("scroll", scroll);
                 clearInterval(interval);
                 mouseFollower.style.display = "none";
