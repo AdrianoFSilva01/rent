@@ -1,10 +1,12 @@
 <!-- prettier-ignore -->
 <template>
     <div id="round-mouse-follower" class="absolute w-10 h-10 border-2 border-white rounded-full pointer-events-none hidden z-10" />
-    <Overlay ref="overlay" />
-    <Header @display-overlay="displayOverlay" class="my-10" />
-    <router-view />
-    <Footer class="my-28" />
+    <Overlay @scroll-to-top="scrollToTop = true" ref="overlay" />
+    <Header @display-overlay="displayOverlay" v-model="scrollToTop" class="my-10 px-20" />
+    <div class="px-20">
+        <router-view />
+        <Footer class="my-28" @scroll-to-top="scrollToTop = true" />
+    </div>
 </template>
 
 <script lang="ts">
@@ -26,6 +28,8 @@ import { Ref } from "vue-property-decorator";
 })
 export default class MasterPage extends Vue {
     @Ref() overlay!: OverlayTs;
+
+    scrollToTop: boolean = false;
 
     displayOverlay(): void {
         this.overlay.toogleDisplay();
