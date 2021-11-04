@@ -6,7 +6,7 @@ import { Prop, Ref } from "vue-property-decorator";
 })
 export default class TextCarousel extends Vue{
     @Ref() textElement!: HTMLElement;
-    @Prop({ default: null}) texts!: Array<string> | null;
+    @Prop({ default: null}) texts!: Array<string>;
 
     textSelected: string | null = "";
     firstClick: boolean = false;
@@ -29,9 +29,17 @@ export default class TextCarousel extends Vue{
             this.selectedElement = document.getElementById("" + selectedElementIndex) as HTMLElement;
             this.firstClick = true;
         } else {
-            this.selectedElement = (event?.target as HTMLElement);
-            this.textSelected = this.selectedElement.textContent;
-            this.$emit("selected-text-carousel", this.textSelected);
+            if(this.selectedElement === undefined) {
+                this.selectedElement = (event?.target as HTMLElement);
+                this.textSelected = this.selectedElement.textContent;
+                if((event?.target as HTMLElement).innerHTML !== this.texts[0]) {
+                    this.$emit("selected-text-carousel", this.textSelected);
+                }
+            } else if((event?.target as HTMLElement) !== this.selectedElement){
+                this.selectedElement = (event?.target as HTMLElement);
+                this.textSelected = this.selectedElement.textContent;
+                this.$emit("selected-text-carousel", this.textSelected);
+            }
         }
         this.changeStyle();
         selectedElementIndex = undefined;
