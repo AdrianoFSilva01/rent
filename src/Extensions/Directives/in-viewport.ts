@@ -4,15 +4,13 @@ export default {
     mounted: function (el: HTMLElement, biding: DirectiveBinding): void {
         let coordinateY: number = 0;
 
-        if(window.pageYOffset === 0) {
-            if(el.getBoundingClientRect().top <= window.innerHeight) {
-                if(Array.isArray(biding.value)) {
-                    for(const value of biding.value) {
-                        el.classList.add(value);
-                    }
-                } else {
-                    el.classList.add(biding.value);
+        if(window.pageYOffset === 0 && el.getBoundingClientRect().top <= window.innerHeight) {
+            if(Array.isArray(biding.value)) {
+                for(const value of biding.value) {
+                    el.classList.add(value);
                 }
+            } else {
+                el.classList.add(biding.value);
             }
         }
 
