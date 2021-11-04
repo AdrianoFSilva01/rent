@@ -1,7 +1,7 @@
 <template>
     <div class="space-y-10">
         <div class="relative flex items-center h-180 w-full opacity-0" v-in-viewport="['fade-animation', 'opacity-100']">
-            <Slider class="transition-all duration-300" ref="slider" :images="images" :draggable="false" @disable-arrow="disableSliderArrow" @enable-arrow="enableSliderArrow" />
+            <Slider class="transition-all duration-300" ref="slider" v-model="imagesSlider" :images="images" :draggable="false" @disable-arrow="disableSliderArrow" @enable-arrow="enableSliderArrow" />
             <Arrow class="absolute -left-5" :disable-button="disablePreviousSliderButton" @click="prevImage" />
             <Arrow class="absolute -right-5" :disable-button="disableNextSliderButton" :direction="ArrowDirection.right" @click="nextImage" />
         </div>
@@ -166,9 +166,11 @@
                     @add-interval="startIntervalBarTransition"
                     @interval-loaded="intervalBarLoadedTransition"
                     @stop-interval="intervalBarStopTransition"
-                    :selected-index="activitiesCarouselIndex"
+                    @no-changes-made="activitySliderNoTransitionMade"
+                    v-model="activitiesIndex"
                     :images="activitiesImages"
                     :draggable="true"
+                    :index="activitiesIndex"
                     :unable-to-change-opacity="unableToChangeSliderOpacity"
             />
             <div class="interval-bar" ref="intervalBar" />
@@ -185,14 +187,13 @@
                       @activity-carousel-mouse-up="activityCarouselMouseUp"
                       @disable-arrow="disableActivityArrow"
                       @enable-arrow="enableActivityArrow"
-                      v-model="activitiesCarouselIndex"
-                      :selected-position="1"
+                      v-model="activitiesIndex"
+                      :selected-position="SelectedPositionCarousel.middle"
                       :click-to-move="true"
-                      v-model:being-dragged="activityCarouselBeingDragged"
                       v-model:is-carousel-extreme="unableToChangeSliderOpacity"
             >
                 <template v-for="(activity, index) in activities" :key="index">
-                    <div ref="activityCarouselItem" class="w-60 flex items-center justify-center border-gold" :class="{'border-l': index !== 0, 'font-bold': activitiesCarouselIndex === index}">
+                    <div ref="activityCarouselItem" class="w-60 flex items-center justify-center border-gold" :class="{'border-l': index !== 0, 'font-bold': activitiesIndex === index}">
                         {{ activity[0] }}
                     </div>
                 </template>

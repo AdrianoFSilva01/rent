@@ -1,4 +1,4 @@
-import { DebouncedFunction, Procedure } from 'ts-debounce';
+import SelectedPositionCarousel from "@/Components/Carousel/SelectedPosition";
 import { Options, Vue } from "vue-class-component";
 import { ModelSync, Prop } from "vue-property-decorator";
 
@@ -11,9 +11,7 @@ import { ModelSync, Prop } from "vue-property-decorator";
         "activity-carousel-mouse-up",
         'update:nextButton',
         'update:previousButton',
-        'update:beingDragged',
         'update:modelValue',
-        "update:isCarouselExtreme",
         "carousel-onmousemove",
         "disable-arrow",
         "enable-arrow"
@@ -22,29 +20,26 @@ import { ModelSync, Prop } from "vue-property-decorator";
 export default class Carousel extends Vue {
     @ModelSync('nextButton', 'update:nextButton') disableNextButton: boolean = false;
     @ModelSync('previousButton', 'update:previousButton') disablePreviousButton: boolean = false;
-    @ModelSync('beingDragged', 'update:beingDragged') dragged: boolean = false;
-    @ModelSync('modelValue', 'update:modelValue') selectedItemIndex!: number;
-    @ModelSync('isCarouselExtreme', 'update:isCarouselExtreme') isExtreme: boolean = false;
+    @ModelSync('modelValue', 'update:modelValue') selectedIndex!: number;
 
-    @Prop({default: 0}) selectedPosition!: number;
+    @Prop({default: SelectedPositionCarousel.left}) selectedPosition!: SelectedPositionCarousel;
     @Prop({default: false}) clickToMove!: boolean;
 
     relativeElement!: HTMLElement;
     absoluteElement!: HTMLElement;
-    mousePosition: number = 0;
     inicialPosition: number = 0;
     childElementWidth: number = 0;
-    firstClickValue: number = 0;
-    finalPosition: number = 0;
-    enterExtremeValue: number = 0;
-    rightExtreme: number = 0;
-    leftMargin: number = 0;
-    debouncedFunction!: DebouncedFunction<Procedure>;
+
+    onMouseDownClientX: number = 0;
+    selectedIndexClientX: number = 0;
+    extremeClientX: number = 0;
+    rightExtremeClientX: number = 0;
+
     transitionEnded: boolean = true;
     mouseMoved: boolean = false;
-    didntAlign: boolean = false;
-    changeFinalPosition: boolean = false;
     transitionDuration: number = 0;
+
+    //Po lixo
     selectedChangedEnterIndex: number = -1;
     onMouseDownMillisecond: number = 0;
     onMouseUpMillisecond: number = 0;
@@ -54,38 +49,18 @@ export default class Carousel extends Vue {
         this.transitionDuration = parseFloat(window.getComputedStyle(this.$el).transitionDuration);
         this.relativeElement = this.$el as HTMLElement;
         this.absoluteElement = (this.$el as HTMLElement).firstElementChild as HTMLElement;
-        this.leftMargin = this.absoluteElement.offsetLeft;
         this.disablePreviousButton = true;
         this.childElementWidth = this.getChildElementWidth();
 
-        if (this.selectedPosition) {
+        if(this.selectedPosition === SelectedPositionCarousel.middle) {
             this.inicialPosition = this.relativeElement.offsetWidth / 2 - this.childElementWidth / 2;
         }
-        this.translateX(this.inicialPosition);
+        this.translateX = this.inicialPosition;
 
-        this.rightExtreme = this.getRightExtreme();
-
-        this.absoluteElement.addEventListener("transitionend", (event: Event) => {
-            if(this.changeFinalPosition && event.target === this.absoluteElement) {
-                this.mouseMoved = false;
-                this.relativeElement.style.cursor = "grab";
-                this.absoluteElement.style.pointerEvents = "auto";
-                this.absoluteElement.style.transitionDuration = this.transitionDuration + "s";
-                this.transitionEnded = true;
-                this.changeFinalPosition = false;
-                this.finalPosition = this.getTranslateX(this.absoluteElement);
-                this.selectedChangedEnterIndex = -1;
-                this.$emit("enable-arrow", this.disableNextButton, this.disablePreviousButton);
-                if(this.addSliderInterval) {
-                    this.$emit("add-slider-interval");
-                    this.addSliderInterval = false;
-                }
-            }
-        })
+        this.rightExtremeClientX = this.getRightExtreme();
 
         this.relativeElement.style.cursor = "grab";
         this.absoluteElement.style.transitionProperty = "all";
-        this.absoluteElement.style.transitionDuration = this.transitionDuration + "s";
     }
 
     getChildElementWidth(): number {
@@ -112,25 +87,36 @@ export default class Carousel extends Vue {
     }
 
     onClick(mouseEvent: MouseEvent): void {
-        if(this.clickToMove) {
-            const selectedElement: HTMLElement = this.absoluteElement.children[this.selectedItemIndex] as HTMLElement;
-            if(selectedElement !== mouseEvent.target as HTMLElement && !this.mouseMoved) {
+        if(this.clickToMove && !this.mouseMoved) {
+            const selectedElement: HTMLElement = this.absoluteElement.children[this.selectedIndex] as HTMLElement;
+            if(selectedElement !== mouseEvent.target as HTMLElement && (mouseEvent.target as HTMLElement).parentNode === this.absoluteElement) {
                 this.goToElement(mouseEvent.target as HTMLElement);
             } else {
-                this.transitionEnded = true;
-            }
+                this.addTransition();
+                this.onMouseUpMillisecond = (new Date().getMinutes() * 60000) + (new Date().getSeconds() * 1000) + new Date().getMilliseconds();
 
-            this.mouseMoved = false;
+                const clickWasFasterThanIntervalTransition: boolean = this.onMouseUpMillisecond - this.onMouseDownMillisecond < this.transitionDuration * 1000;
+
+                if(clickWasFasterThanIntervalTransition) {
+                    setTimeout(() => {
+                        this.afterTransition();
+                        this.$emit("add-slider-interval");
+                    }, (this.transitionDuration * 1000) - (this.onMouseUpMillisecond - this.onMouseDownMillisecond));
+                } else {
+                    this.afterTransition();
+                    this.$emit("add-slider-interval");
+                }
+            }
+        } else {
+            this.afterTransition();
         }
     }
 
     onMouseDown(e: MouseEvent): void {
         if(this.transitionEnded) {
-            this.transitionEnded = false;
-            this.changeFinalPosition = false;
-            this.absoluteElement.style.transitionDuration = "0ms";
-            this.firstClickValue = e.clientX;
-            this.dragged = true;
+            this.removeTransition();
+            this.onMouseDownClientX = e.clientX;
+            this.extremeClientX = 0;
             document.onmousemove = this.onMouseMove;
             document.onmouseup = this.onMouseUp;
 
@@ -141,141 +127,92 @@ export default class Carousel extends Vue {
 
     onMouseMove(mouseEvent: MouseEvent): void {
         mouseEvent.preventDefault();
-        this.relativeElement.style.cursor = "grabbing";
-        this.mouseMoved = true;
+
+        mouseEvent.clientX !== this.onMouseDownClientX
+            ? this.mouseMoved = true
+            : this.mouseMoved = false;
 
         let selectedItem: number = 0;
 
-        if(this.finalPosition) {
-            this.translateX(this.finalPosition + (mouseEvent.clientX - this.firstClickValue));
-            selectedItem = Math.round((this.inicialPosition - (this.finalPosition + (mouseEvent.clientX - this.firstClickValue))) / this.childElementWidth);
+        if(this.selectedIndexClientX) {
+            this.translateX = this.selectedIndexClientX + (mouseEvent.clientX - this.onMouseDownClientX);
+            selectedItem = Math.round((this.inicialPosition - (this.selectedIndexClientX + (mouseEvent.clientX - this.onMouseDownClientX))) / this.childElementWidth);
         } else {
-            this.translateX(this.finalPosition + this.inicialPosition + (mouseEvent.clientX - this.firstClickValue));
-            selectedItem = Math.round((this.finalPosition + (this.firstClickValue - mouseEvent.clientX)) / this.childElementWidth);
+            this.translateX = this.inicialPosition + (mouseEvent.clientX - this.onMouseDownClientX);
+            selectedItem = Math.round((this.selectedIndexClientX + (this.onMouseDownClientX - mouseEvent.clientX)) / this.childElementWidth);
         }
 
         this.checkExtremes(mouseEvent);
 
         if(selectedItem < 0) {
-            this.selectedItemIndex = 0
+            this.selectedIndex = 0
         } else if(selectedItem > this.absoluteElement.children.length - 1) {
-            this.selectedItemIndex = this.absoluteElement.children.length - 1;
+            this.selectedIndex = this.absoluteElement.children.length - 1;
         } else {
-            this.selectedItemIndex = selectedItem;
+            this.selectedIndex = selectedItem;
         }
 
-        this.$emit("activity-carousel-mouse-moving", this.inicialPosition - this.getTranslateX(this.absoluteElement), this.selectedItemIndex);
+        const percentageMoved: number = ((this.inicialPosition - this.getTranslateX()) / ((this.absoluteElement.children.length - 1) * this.childElementWidth)) * 100
+
+        this.$emit("activity-carousel-mouse-moving", percentageMoved);
     }
 
-    move(value: number): void {
-        if(!this.mousePosition) {
-            this.mousePosition = this.getTranslateX(this.absoluteElement);
-        }
-        this.translateX(this.mousePosition + value);
-    }
-
-    onMouseUp(): void {
+    onMouseUp(mouseEvent: MouseEvent): void {
         document.onmousemove = null;
         document.onmouseup = null;
 
         if(this.mouseMoved) {
-            this.relativeElement.style.cursor = "not-allowed";
-            this.absoluteElement.style.pointerEvents = "none";
-            this.absoluteElement.style.transitionDuration = this.transitionDuration + "s";
-            this.changeFinalPosition = true;
-            const translateX: number = this.getTranslateX(this.absoluteElement);
-            this.enterExtremeValue = 0;
+            this.mouseMoved = false;
+            this.addTransition();
+            const translateX: number = this.getTranslateX();
+            const noOpacityChanges: boolean = Math.abs(((translateX - this.inicialPosition)) / this.childElementWidth) % 1 === 0;
+            const selectedElementClientX: number = this.inicialPosition - this.selectedIndex * this.childElementWidth;
 
-            if(Math.abs(((this.getTranslateX(this.absoluteElement) - this.inicialPosition)) / this.childElementWidth) % 1 === 0) {
-                this.transitionEnded = true;
-                this.relativeElement.style.cursor = "grab";
-                this.absoluteElement.style.pointerEvents = "auto";
-                this.finalPosition = this.getTranslateX(this.absoluteElement);
-                this.$emit("activity-carousel-mouse-up", this.selectedItemIndex);
-            } else if(this.isExtremeLeft(translateX)) {
-                this.selectedItemIndex = 0;
-                this.translateX(this.inicialPosition);
-                this.$emit("activity-carousel-mouse-up", 0);
-            } else if(this.isExtremeRight(translateX)) {
-                this.selectedItemIndex = this.absoluteElement.children.length - 1;
-                this.translateX(this.rightExtreme);
-                this.$emit("activity-carousel-mouse-up", this.absoluteElement.children.length - 1);
+            if(noOpacityChanges) {
+                this.afterTransition();
+            } else if(selectedElementClientX < this.rightExtremeClientX) {
+                const excededValue: number = (translateX - this.childElementWidth) - this.rightExtremeClientX;
+                this.translateX = translateX - ((this.childElementWidth + excededValue));
             } else {
-                this.translateX(this.inicialPosition - this.selectedItemIndex * this.childElementWidth);
-                this.$emit("activity-carousel-mouse-up", this.selectedItemIndex);
+                this.translateX = selectedElementClientX;
             }
 
+            this.$emit("activity-carousel-mouse-up");
             this.$emit("disable-arrow");
         } else {
-            this.transitionEnded = true;
-            this.onMouseUpMillisecond = (new Date().getMinutes() * 60000) + (new Date().getSeconds() * 1000) + new Date().getMilliseconds();
-
-            if(this.onMouseUpMillisecond - this.onMouseDownMillisecond < this.transitionDuration * 1000) {
-                setTimeout(() => {
-                    this.$emit("add-slider-interval");
-                }, (this.transitionDuration * 1000) - (this.onMouseUpMillisecond - this.onMouseDownMillisecond));
-            } else {
-                this.$emit("add-slider-interval");
-            }
+            this.onClick(mouseEvent);
         }
-    }
-
-    alignItems(index: number): void {
-        const translateX: number = this.getTranslateX(this.absoluteElement);
-        if (translateX - this.inicialPosition % this.childElementWidth != 0) {
-            this.translateX(translateX - ((this.childElementWidth * index) - (this.inicialPosition - translateX)));
-        } else {
-            this.translateX(this.inicialPosition - (this.childElementWidth * index));
-        }
-        this.mousePosition = 0;
-    }
-
-    getClosestAlignedElementPosition(): number {
-        const position: number = this.childElementWidth * Math.round((this.getTranslateX(this.absoluteElement) + this.leftMargin) / this.childElementWidth);
-        const rest: number = (this.childElementWidth * Math.round((this.relativeElement.offsetWidth / 2) / this.childElementWidth)) - this.inicialPosition;
-
-        if(position - rest === this.getTranslateX(this.absoluteElement)) {
-            this.didntAlign = true;
-        }
-
-        return this.inicialPosition ? position - rest : position;
     }
 
     nextItem(): void {
         if(this.transitionEnded) {
-            this.transitionEnded = false;
-            this.changeFinalPosition = true;
-            this.relativeElement.style.cursor = "not-allowed";
-            this.absoluteElement.style.pointerEvents = "none";
-            const translateX: number = this.getTranslateX(this.absoluteElement);
+            this.addTransition();
+            const translateX: number = this.getTranslateX();
 
-            if(translateX === this.rightExtreme){
-                this.selectedItemIndex = 0;
-                this.translateX(this.inicialPosition);
-            } else if(this.nextMoveIsExtremeRight()) {
-                const excededValue: number = (translateX - this.childElementWidth) - this.rightExtreme;
-                this.inicialPosition ? this.translateX(this.inicialPosition) : this.translateX(translateX - (this.childElementWidth + excededValue));
-                this.selectedItemIndex = Math.round(((this.childElementWidth + excededValue) - translateX) / this.childElementWidth);
+            if(translateX === this.rightExtremeClientX){
+                this.translateX = this.inicialPosition;
+                this.selectedIndex = 0;
+            } else if(this.nextMoveIsRightExtreme()) {
+                const excededValue: number = (translateX - this.childElementWidth) - this.rightExtremeClientX;
+                this.inicialPosition ? this.translateX = this.inicialPosition : this.translateX = translateX - (this.childElementWidth + excededValue);
+                this.selectedIndex = ((this.childElementWidth + excededValue) - translateX) / this.childElementWidth;
             } else {
-                this.selectedItemIndex = ((this.inicialPosition - translateX) / this.childElementWidth) + 1;
-                this.translateX(translateX - this.childElementWidth);
+                this.translateX = translateX - this.childElementWidth;
+                this.selectedIndex = ((this.inicialPosition - translateX) / this.childElementWidth) + 1;
             }
 
             this.$emit("disable-arrow");
         }
     }
 
-    nextMoveIsExtremeRight(): boolean {
-        return this.getTranslateX(this.absoluteElement) - this.childElementWidth < this.rightExtreme;
+    nextMoveIsRightExtreme(): boolean {
+        return this.getTranslateX() - this.childElementWidth < this.rightExtremeClientX;
     }
 
     previousItem(): void {
         if(this.transitionEnded) {
-            this.transitionEnded = false;
-            this.changeFinalPosition = true;
-            this.relativeElement.style.cursor = "not-allowed";
-            this.absoluteElement.style.pointerEvents = "none";
-            const translateX: number = this.getTranslateX(this.absoluteElement);
+            this.addTransition();
+            const translateX: number = this.getTranslateX();
 
             if(this.isNotAligned() && !this.inicialPosition) {
                 const excededValue: number = this.childElementWidth
@@ -285,14 +222,14 @@ export default class Carousel extends Vue {
                                 )
                                 + this.childElementWidth * (translateX / this.childElementWidth);
 
-                this.selectedItemIndex = (excededValue - translateX) / this.childElementWidth;
-                this.translateX(translateX - excededValue);
+                this.translateX = translateX - excededValue;
+                this.selectedIndex = (excededValue - translateX) / this.childElementWidth;
             } else if(this.nextMoveIsExtremeLeft()) {
-                this.selectedItemIndex = this.absoluteElement.children.length - 1;
-                this.translateX(this.rightExtreme);
+                this.translateX = this.rightExtremeClientX;
+                this.selectedIndex = this.absoluteElement.children.length - 1;
             } else {
-                this.selectedItemIndex = ((this.inicialPosition - translateX) / this.childElementWidth) - 1;
-                this.translateX(translateX + this.childElementWidth);
+                this.translateX = translateX + this.childElementWidth;
+                this.selectedIndex = ((this.inicialPosition - translateX) / this.childElementWidth) - 1;
             }
 
             this.$emit("disable-arrow");
@@ -300,116 +237,84 @@ export default class Carousel extends Vue {
     }
 
     nextMoveIsExtremeLeft(): boolean {
-        return this.getTranslateX(this.absoluteElement) + this.childElementWidth > this.inicialPosition;
+        return this.getTranslateX() + this.childElementWidth > this.inicialPosition;
     }
 
     isNotAligned(): boolean {
-        const translateX: number = this.getTranslateX(this.absoluteElement);
+        const translateX: number = this.getTranslateX();
         return translateX % this.childElementWidth != 0;
     }
 
     goToElement(element: HTMLElement): void {
         document.onmouseup = null;
         document.onmousemove = null;
-        this.transitionEnded = false;
-        this.changeFinalPosition = true;
-        this.relativeElement.style.cursor = "not-allowed";
-        this.absoluteElement.style.pointerEvents = "none";
-        this.absoluteElement.style.transitionDuration = this.transitionDuration + "s";
+        this.addTransition();
 
-        const translateX: number = this.getTranslateX(this.absoluteElement);
-
-        if (this.ifJumpIsHigherThanRightExtreme(element) && !this.inicialPosition) {
-            this.translateX(this.rightExtreme);
-        } else if(!this.isInitialPosition()) {
-            this.translateX(translateX - (element.offsetLeft + translateX) + this.inicialPosition);
+        if(this.ifJumpIsHigherThanRightExtreme(element) && !this.inicialPosition) {
+            this.translateX = this.rightExtremeClientX;
+            this.selectedIndex = this.absoluteElement.children.length - 1;
         } else {
-            this.translateX(-element.offsetLeft + this.inicialPosition);
+            this.translateX = -((element.offsetLeft) - this.inicialPosition);
+            this.selectedIndex = element.offsetLeft / this.childElementWidth;
         }
 
-        const selected: number = element.offsetLeft / this.childElementWidth;
-        this.selectedItemIndex = selected;
-
-
-        this.$emit("selected-changed", selected);
+        this.$nextTick(() => {
+            this.$emit("selected-changed");
+        });
         this.$emit("disable-arrow");
     }
 
-    selectedChanged(position: number, changeOpacityMargin: number): void {
-        if(this.selectedChangedEnterIndex < 0) {
-            this.selectedChangedEnterIndex = this.selectedItemIndex;
-        }
+    selectedChanging(percentageMoved: number): void {
+        this.mouseMoved = true;
+        if(Math.abs(percentageMoved) < 100) {
+            const pixelsToMove: number = (percentageMoved / 100) * this.childElementWidth;
+            const selectedClientX: number = this.selectedIndexClientX
+                ? this.selectedIndexClientX
+                : this.inicialPosition;
+            const translateX: number = selectedClientX + pixelsToMove;
 
-        if(position > changeOpacityMargin) {
-            if(this.selectedChangedEnterIndex === 0) {
-                this.selectedItemIndex = this.absoluteElement.children.length - 1;
-            } else {
-                this.selectedItemIndex = this.selectedChangedEnterIndex - 1;
-            }
-        } else if(position < -changeOpacityMargin) {
-            if(this.selectedChangedEnterIndex === this.absoluteElement.children.length - 1) {
-                this.selectedItemIndex = 0;
-            } else {
-                this.selectedItemIndex = this.selectedChangedEnterIndex + 1;
-            }
-        } else {
-            this.selectedItemIndex = this.selectedChangedEnterIndex;
+            this.translateX = translateX;
         }
-
-        this.changeFinalPosition = true;
-        this.absoluteElement.style.transitionDuration = "0ms";
-        this.finalPosition ? this.translateX(this.finalPosition + position) : this.translateX(this.inicialPosition + position);
     }
 
-    AlignByIndex(index: number): void {
-        this.changeFinalPosition = true;
-
-        this.relativeElement.style.cursor = "not-allowed";
-        this.absoluteElement.style.pointerEvents = "none";
-        this.absoluteElement.style.transitionDuration = this.transitionDuration + "s";
-
-        this.selectedItemIndex = index;
-        this.translateX(this.inicialPosition - (index * this.childElementWidth));
+    selectedChanged(): void {
+        this.addTransition();
+        this.mouseMoved = false;
+        this.translateX = -((this.selectedIndex * this.childElementWidth) - this.inicialPosition);
+        this.afterTransition();
     }
 
     ifJumpIsHigherThanRightExtreme(element: HTMLElement): boolean {
-        return this.rightExtreme > this.getTranslateX(this.absoluteElement) - (element.offsetLeft + this.getTranslateX(this.absoluteElement));
-    }
-
-    isInitialPosition(): boolean {
-        return this.getTranslateX(this.absoluteElement) === this.inicialPosition;
+        return this.rightExtremeClientX > this.getTranslateX() - (element.offsetLeft + this.getTranslateX());
     }
 
     checkExtremes(mouseEvent: MouseEvent): void {
         mouseEvent.preventDefault();
-        const translateX: number = this.getTranslateX(this.absoluteElement);
-        this.getExtremeValue(mouseEvent);
+        const translateX: number = this.getTranslateX();
+        this.setExtremeValue(mouseEvent);
 
         if(this.isExtremeLeft(translateX)) {
-            this.translateX(((mouseEvent.clientX - this.enterExtremeValue) * 0.1) + this.inicialPosition);
-            this.isExtreme = true;
+            this.translateX = ((mouseEvent.clientX - this.extremeClientX) * 0.1) + this.inicialPosition;
         } else if(this.isExtremeRight(translateX)) {
-            this.translateX((mouseEvent.clientX - this.enterExtremeValue) * 0.1 + this.rightExtreme);
-            this.isExtreme = true;
+            this.translateX = (mouseEvent.clientX - this.extremeClientX) * 0.1 + this.rightExtremeClientX;
         } else {
-            this.isExtreme = false;
-            this.enterExtremeValue = 0;
+            this.extremeClientX = 0;
         }
     }
 
-    getExtremeValue(mouseEvent: MouseEvent): void {
-        if (!this.enterExtremeValue){
-            this.enterExtremeValue = mouseEvent.clientX;
+    setExtremeValue(mouseEvent: MouseEvent): void {
+        if (!this.extremeClientX){
+            this.extremeClientX = mouseEvent.clientX;
         }
     }
 
-    getTranslateX(element: HTMLElement): number {
-        const style: CSSStyleDeclaration = window.getComputedStyle(element);
+    getTranslateX(): number {
+        const style: CSSStyleDeclaration = window.getComputedStyle(this.absoluteElement);
         const matrix: DOMMatrixReadOnly = new DOMMatrixReadOnly(style.transform);
         return matrix.m41;
     }
 
-    translateX(value: number): void {
+    set translateX(value: number) {
         if((this.$el as HTMLElement).firstElementChild) {
             ((this.$el as HTMLElement).firstElementChild as HTMLElement).style.transform = `translateX(${value}px)`;
         }
@@ -430,6 +335,39 @@ export default class Carousel extends Vue {
     }
 
     isExtremeRight(value: number): boolean {
-        return value <= this.rightExtreme;
+        return value <= this.rightExtremeClientX;
+    }
+
+    addTransition(): void {
+        this.transitionEnded = false;
+        this.relativeElement.style.cursor = "not-allowed";
+        document.getElementsByTagName("body")[0].style.cursor = "default";
+        this.absoluteElement.style.pointerEvents = "none";
+        this.absoluteElement.style.transitionDuration = this.transitionDuration + "s";
+    }
+
+    removeTransition(): void {
+        this.transitionEnded = false;
+        this.relativeElement.style.cursor = "grabbing";
+        document.getElementsByTagName("body")[0].style.cursor = "grabbing";
+        this.absoluteElement.style.pointerEvents = "auto";
+        this.absoluteElement.style.transitionDuration = "0ms";
+    }
+
+    afterTransition(): void {
+        this.transitionEnded = true;
+        this.selectedIndexClientX = this.getTranslateX();
+        this.selectedChangedEnterIndex = -1;
+        this.relativeElement.style.cursor = "grab";
+        this.absoluteElement.style.pointerEvents = "auto";
+        document.getElementsByTagName("body")[0].style.cursor = "default";
+        this.absoluteElement.style.transitionDuration = "0ms";
+        this.$emit("enable-arrow", this.disableNextButton, this.disablePreviousButton);
+
+        //Pah vamos ver V.2
+        if(this.addSliderInterval) {
+            this.$emit("add-slider-interval");
+            this.addSliderInterval = false;
+        }
     }
 }

@@ -1,8 +1,10 @@
 import { Options, Vue } from "vue-class-component";
-import { Prop, Ref } from "vue-property-decorator";
+import { ModelSync, Prop, Ref } from "vue-property-decorator";
 
 @Options({
-    emits: ["changed-slider-image",
+    emits: [
+        'update:modelValue',
+        "changed-slider-image",
         "activity-slider-mouse-down",
         "activity-slider-mouse-moving",
         "activity-slider-mouse-up",
@@ -10,66 +12,49 @@ import { Prop, Ref } from "vue-property-decorator";
         "enable-arrow",
         "add-interval",
         "interval-loaded",
-        "stop-interval"
+        "stop-interval",
+        "no-changes-made"
     ]
 })
 export default class Slider extends Vue{
+    @ModelSync('modelValue', 'update:modelValue') selectedIndex!: number;
+
     @Prop({required: true}) images!: Array<string>;
     @Prop({default: false}) draggable!: boolean;
 
-    @Ref() mainImage!: HTMLElement;
-    @Ref() backgroundImage!: HTMLElement;
+    @Ref() previousContainer!: HTMLElement;
+    @Ref() currentContainer!: HTMLElement;
+    @Ref() nextContainer!: HTMLElement;
 
-    mainImageIndex: number = 0;
-    backgroundImageIndex: number = 0;
     transitionEnded: boolean = true;
     transitionDuration: number = 0;
     onMouseDownClientX: number = 0;
+    mouseMoved: boolean = false;
     mainImageOpacity: number = 0;
     changeImageInterval: number = 0;
     occuringInterval: boolean = false;
     imagesElement: Array<HTMLImageElement> = [];
-    divsElement: Array<HTMLElement> = [];
-    resetOpacityValue: number = 0;
-    duplicateClientX: number = 0;
-    selectedItemIndexSingleValue: number = 0;
     changeOpacityMarginPercentage: number = 15;
     changeOpacityMargin: number = 0;
-    changeOpacityElement: number = -1;
     emitStopInterval: boolean = true;
     onMouseUpMillisecond: number = 0;
     onMouseDownMillisecond: number = 0;
-    delayedPosition: number = -1;
 
     mounted(): void {
-        this.changeOpacityMargin = (this.changeOpacityMarginPercentage / 100) * this.mainImage.offsetWidth;
-        this.transitionDuration = parseFloat(window.getComputedStyle(this.mainImage).transitionDuration);
+        const parentElement: HTMLElement | null = (this.$el as HTMLElement).parentElement;
+        if(parentElement) {
+            this.changeOpacityMargin = (this.changeOpacityMarginPercentage / 100) * parentElement.offsetWidth;
+        }
+        this.transitionDuration = parseFloat(window.getComputedStyle(this.$el).transitionDuration);
         this.addInterval();
 
         if(this.draggable) {
-            (this.$el as HTMLElement).style.cursor = "grab";
+            this.cursorStyleAfterTransition();
         }
 
-        for(const image in this.images) {
-            this.divsElement[image] = document.createElement("div");
-            this.divsElement[image].style.opacity = "0";
-            this.divsElement[image].addEventListener("transitionend", () => {
-                this.transitionEnded = true;
-
-                if(this.mainImage.firstChild) {
-                    this.removeTransitionButOpacity(this.mainImage.firstChild as HTMLElement);
-                }
-
-                if(this.mainImage.lastChild !== this.divsElement[this.mainImageIndex]) {
-                    this.removeTransition(this.mainImage.lastChild as HTMLElement);
-                } else {
-                    this.removeTransitionButOpacity(this.mainImage.lastChild as HTMLElement);
-                }
-
-                this.removeTransitionButOpacity(this.divsElement[this.mainImageIndex]);
-
-                this.changeOpacityElement = -1;
-                this.addInterval();
+        for(const element of (this.$el as HTMLElement).children) {
+            element.addEventListener("transitionend", () => {
+                this.onTransitionEnd();
 
                 this.$emit("enable-arrow");
             });
@@ -82,35 +67,46 @@ export default class Slider extends Vue{
             this.imagesElement[image].classList.add("absolute", "top-0", "object-cover", "object-center", "h-full", "w-full");
         }
 
-        this.mainImage.appendChild(this.divsElement[this.images.length - 1]);
-        this.divsElement[this.images.length - 1].appendChild(this.imagesElement[this.images.length - 1]);
+        this.previousContainer.appendChild(this.imagesElement[this.images.length - 1]);
+        this.previousContainer.style.opacity = "1";
+        this.currentContainer.appendChild(this.imagesElement[0]);
+        this.currentContainer.style.opacity = "1";
+        this.nextContainer.appendChild(this.imagesElement[1]);
+        this.nextContainer.style.opacity = "0";
+    }
 
-        this.mainImage.appendChild(this.divsElement[0]);
-        this.divsElement[0].style.opacity = "1";
-        this.divsElement[0].appendChild(this.imagesElement[0]);
+    onTransitionEnd(): void {
+        this.transitionEnded = true;
 
-        this.mainImage.appendChild(this.divsElement[1]);
-        this.divsElement[1].appendChild(this.imagesElement[1]);
+        const firstChildIndex: number = this.selectedIndex === 0 ? this.images.length - 1 : this.selectedIndex - 1;
+        const lastChildIndex: number = this.selectedIndex === this.images.length - 1 ? 0 : this.selectedIndex + 1;
+
+        this.setElementChild(this.previousContainer, firstChildIndex, 1);
+        this.setElementChild(this.currentContainer, this.selectedIndex, 1);
+        this.setElementChild(this.nextContainer, lastChildIndex, 0);
+
+        this.removeTransition(this.previousContainer);
+        this.removeTransition(this.currentContainer);
+        this.removeTransition(this.nextContainer);
+
+        this.addInterval();
     }
 
     onMouseDown(mouseEvent: MouseEvent): void {
         mouseEvent.preventDefault();
         this.stopInterval();
-        this.occuringInterval = false;
+
         if(this.transitionEnded) {
             if(this.draggable) {
-                (this.$el as HTMLElement).style.cursor = "grabbing";
+                this.cursorStyleWithoutTransition();
             }
+
             this.onMouseDownClientX = mouseEvent.clientX;
-            if(this.mainImageIndex === 0) {
-                this.divsElement[this.images.length - 1].style.opacity = "1"
-            } else {
-                this.divsElement[this.mainImageIndex - 1].style.opacity = "1";
-            }
-            document.onmousemove = this.onMouseMove;
-            document.onmouseup = this.onMouseUp;
 
             this.onMouseDownMillisecond = (new Date().getMinutes() * 60000) + (new Date().getSeconds() * 1000) + new Date().getMilliseconds();
+
+            document.onmousemove = this.onMouseMove;
+            document.onmouseup = this.onMouseUp;
         }
 
         this.$emit("activity-slider-mouse-down");
@@ -119,617 +115,212 @@ export default class Slider extends Vue{
     onMouseMove(mouseEvent: MouseEvent): void {
         const minOpacityValid: number = 0.01;
         const maxOpacityValid: number = 0.99;
+        const notMovingBetweenMargins: boolean = mouseEvent.clientX > this.onMouseDownClientX + this.changeOpacityMargin || mouseEvent.clientX < this.onMouseDownClientX - this.changeOpacityMargin;
+        this.mouseMoved = true;
 
-        if(mouseEvent.clientX > this.onMouseDownClientX + this.changeOpacityMargin || mouseEvent.clientX < this.onMouseDownClientX - this.changeOpacityMargin) {
-            if(this.onMouseDownClientX - mouseEvent.clientX < 0) {
+        if(notMovingBetweenMargins) {
+            const movingLeft: boolean = this.onMouseDownClientX - mouseEvent.clientX > 0;
+            const movingRight: boolean = this.onMouseDownClientX - mouseEvent.clientX < 0;
+
+
+            if(movingRight) {
                 this.mainImageOpacity = 1 - (((mouseEvent.clientX - this.onMouseDownClientX) - this.changeOpacityMargin) / 1000);
 
                 this.mainImageOpacity < minOpacityValid
-                    ? this.divsElement[this.mainImageIndex].style.opacity = "" + minOpacityValid
-                    : this.divsElement[this.mainImageIndex].style.opacity = "" + this.mainImageOpacity;
-            } else if(this.onMouseDownClientX - mouseEvent.clientX > 0) {
+                    ? (this.currentContainer).style.opacity = "" + minOpacityValid
+                    : (this.currentContainer).style.opacity = "" + this.mainImageOpacity;
+
+                // console.log(Math.trunc(this.selectedIndex + minOpacityValid) - 1);
+
+            } else if(movingLeft) {
                 this.mainImageOpacity = ((this.onMouseDownClientX - mouseEvent.clientX) - this.changeOpacityMargin) / 1000;
 
                 this.mainImageOpacity > maxOpacityValid
-                    ? this.divsElement[this.mainImageIndex === this.images.length - 1 ? 0 : this.mainImageIndex + 1].style.opacity = "" + maxOpacityValid
-                    : this.divsElement[this.mainImageIndex === this.images.length - 1 ? 0 : this.mainImageIndex + 1].style.opacity = "" + this.mainImageOpacity;
+                    ? (this.nextContainer).style.opacity = "" + maxOpacityValid
+                    : (this.nextContainer).style.opacity = "" + this.mainImageOpacity;
+
+                // console.log(Math.trunc(this.selectedIndex + maxOpacityValid) + 1);
+                // this.selectedIndex = Math.trunc(this.selectedIndex + maxOpacityValid) + 1;
             }
+        } else {
+            // const teste: number = (this.onMouseDownClientX - mouseEvent.clientX) / 1000;
         }
 
-        this.$emit("activity-slider-mouse-moving", mouseEvent.clientX - this.onMouseDownClientX, this.changeOpacityMargin);
+        const parentElement: HTMLElement | null = (this.$el as HTMLElement).parentElement;
+
+        if(parentElement) {
+            this.$emit("activity-slider-mouse-moving", ((mouseEvent.clientX - this.onMouseDownClientX) / parentElement.offsetWidth) * 100);
+        }
     }
 
     onMouseUp(mouseEvent: MouseEvent): void {
         document.onmousemove = null;
 
-        if(mouseEvent.clientX < this.onMouseDownClientX - this.changeOpacityMargin) {
-            this.nextImage(true);
-        } else if(mouseEvent.clientX > this.onMouseDownClientX + this.changeOpacityMargin) {
-            this.previousImage();
-        } else {
-            (this.$el as HTMLElement).style.cursor = "not-allowed";
-            ((this.$el as HTMLElement).firstElementChild as HTMLElement).style.pointerEvents = "none";
+        const movedRight: boolean = mouseEvent.clientX >= this.onMouseDownClientX + this.changeOpacityMargin;
+        const movedLeft: boolean = mouseEvent.clientX <= this.onMouseDownClientX - this.changeOpacityMargin;
 
-            if(mouseEvent.clientX === this.onMouseDownClientX) {
+        if(movedLeft) {
+            if(this.transitionEnded) {
+                this.nextImage(true);
+            }
+        } else if(movedRight) {
+            if(this.transitionEnded) {
+                this.previousImage();
+            }
+        } else {
+            this.cursorStyleWithTransition();
+
+            const didntChangePosition: boolean = mouseEvent.clientX === this.onMouseDownClientX;
+
+            if(didntChangePosition) {
                 this.onMouseUpMillisecond = (new Date().getMinutes() * 60000) + (new Date().getSeconds() * 1000) + new Date().getMilliseconds();
 
-                if(this.onMouseUpMillisecond - this.onMouseDownMillisecond < this.transitionDuration * 1000) {
+                const clickWasFasterThanTransition: boolean = this.onMouseUpMillisecond - this.onMouseDownMillisecond < this.transitionDuration * 1000;
+
+                if(clickWasFasterThanTransition) {
+                    const timeRemainToTransitionEnd: number = (this.transitionDuration * 1000) - (this.onMouseUpMillisecond - this.onMouseDownMillisecond);
+
                     setTimeout(() => {
                         this.addInterval();
-                        (this.$el as HTMLElement).style.cursor = "grab";
-                        ((this.$el as HTMLElement).firstElementChild as HTMLElement).style.pointerEvents = "auto";
-                    }, (this.transitionDuration * 1000) - (this.onMouseUpMillisecond - this.onMouseDownMillisecond));
+                        this.cursorStyleAfterTransition();
+                        this.$emit("no-changes-made");
+                    }, timeRemainToTransitionEnd);
                 } else {
                     this.addInterval();
-                    (this.$el as HTMLElement).style.cursor = "grab";
-                    ((this.$el as HTMLElement).firstElementChild as HTMLElement).style.pointerEvents = "auto";
+                    this.cursorStyleAfterTransition();
+                    this.$emit("no-changes-made");
                 }
             } else {
-                this.$emit("activity-slider-mouse-up", true);
+                this.onMouseUpMillisecond = (new Date().getMinutes() * 60000) + (new Date().getSeconds() * 1000) + new Date().getMilliseconds();
+
+                const clickWasFasterThanTransition: boolean = this.onMouseUpMillisecond - this.onMouseDownMillisecond < this.transitionDuration * 1000;
+
+                if(clickWasFasterThanTransition) {
+                    const timeRemainToTransitionEnd: number = (this.transitionDuration * 1000) - (this.onMouseUpMillisecond - this.onMouseDownMillisecond);
+
+                    setTimeout(() => {
+                        this.cursorStyleAfterTransition();
+                        this.$emit("activity-slider-mouse-up", true);
+                    }, timeRemainToTransitionEnd);
+                } else {
+                    this.cursorStyleAfterTransition();
+                    this.$emit("activity-slider-mouse-up", true);
+                }
             }
         }
 
+        this.mouseMoved = false;
         document.onmouseup = null;
     }
 
-    nextImage(clicked: boolean): void {
+    nextImage(buttonClicked: boolean): void {
         if(this.transitionEnded) {
-            if(this.draggable) {
-                (this.$el as HTMLElement).style.cursor = "not-allowed";
-                ((this.$el as HTMLElement).firstElementChild as HTMLElement).style.pointerEvents = "none";
-            }
+            this.selectedIndex = this.selectedIndex === this.images.length - 1 ? 0 : this.selectedIndex + 1;
 
             this.transitionEnded = false;
-            this.occuringInterval = false;
-            this.emitStopInterval = false;
-
             this.stopInterval();
 
-            if(this.mainImageIndex === this.images.length - 1) {
-                this.mainImageIndex = 0;
-
-                this.mainImage.appendChild(this.divsElement[this.mainImageIndex + 1]);
-                this.divsElement[this.mainImageIndex + 1].style.opacity = "0";
-
-                setTimeout(() => {
-                    this.divsElement[this.mainImageIndex + 1].appendChild(this.imagesElement[this.mainImageIndex + 1]);
-                }, 1);
-
-                this.addTransition(this.divsElement[0], 1);
-            } else if (this.mainImageIndex + 1 === this.images.length - 1) {
-                this.mainImage.appendChild(this.divsElement[0]);
-                this.divsElement[0].style.opacity = "0";
-
-                setTimeout(() => {
-                    this.divsElement[0].appendChild(this.imagesElement[0]);
-                }, 1);
-
-                this.addTransition(this.divsElement[this.images.length - 1], 1);
-
-                this.mainImageIndex = this.images.length - 1;
-            } else {
-                this.mainImage.appendChild(this.divsElement[++this.mainImageIndex + 1]);
-                this.divsElement[this.mainImageIndex + 1].style.opacity = "0";
-
-                setTimeout(() => {
-                    this.divsElement[this.mainImageIndex + 1].appendChild(this.imagesElement[this.mainImageIndex + 1]);
-                }, 1);
-
-                this.addTransition(this.divsElement[this.mainImageIndex], 1);
+            if(this.draggable) {
+                this.cursorStyleWithTransition();
             }
 
-            if(this.mainImage.children.length > 3 && this.mainImage.firstChild?.firstChild){
-                this.removeTransition(this.mainImage.firstChild as HTMLElement);
-                this.mainImage.firstChild?.removeChild(this.mainImage.firstChild.firstChild);
-                this.mainImage.removeChild(this.mainImage.childNodes[0]);
-            }
+            this.addTransition(this.nextContainer, 1);
 
-            this.$emit("changed-slider-image", this.mainImageIndex === - 1 ? this.images.length - 1 : this.mainImageIndex);
+            buttonClicked
+                ? this.$emit("stop-interval", this.transitionDuration)
+                : this.$emit("interval-loaded", this.transitionDuration);
+            this.$nextTick(() => {
+                this.$emit("changed-slider-image");
+            });
             this.$emit("disable-arrow");
-            if(clicked) {
-                this.$emit("stop-interval", this.transitionDuration);
-            } else {
-                this.$emit("interval-loaded", this.transitionDuration);
-            }
         }
     }
 
     previousImage(): void {
         if(this.transitionEnded) {
-            if(this.draggable) {
-                (this.$el as HTMLElement).style.cursor = "not-allowed";
-                ((this.$el as HTMLElement).firstElementChild as HTMLElement).style.pointerEvents = "none";
-            }
+            this.selectedIndex = this.selectedIndex === 0 ? this.images.length - 1 : this.selectedIndex - 1;
 
             this.transitionEnded = false;
-            this.occuringInterval = false;
-
             this.stopInterval();
 
-            if(this.mainImageIndex === 0) {
-                this.mainImage.insertBefore(this.divsElement[this.images.length - 2], this.mainImage.childNodes[0]);
-
-                setTimeout(() => {
-                    this.divsElement[this.images.length - 2].appendChild(this.imagesElement[this.images.length - 2]);
-                    this.divsElement[this.images.length - 2].style.opacity = "1";
-                    this.divsElement[this.images.length - 1].style.opacity = "1";
-                }, 1);
-
-                this.addTransition(this.divsElement[0], 0);
-
-                this.mainImageIndex = this.images.length - 1;
-            } else if(this.mainImageIndex - 1 === 0) {
-                this.mainImage.insertBefore(this.divsElement[this.images.length - 1], this.mainImage.childNodes[0]);
-
-                setTimeout(() => {
-                    this.divsElement[this.images.length - 1].appendChild(this.imagesElement[this.images.length - 1]);
-                    this.divsElement[0].style.opacity = "1";
-                }, 1);
-
-                this.addTransition(this.divsElement[this.mainImageIndex], 0);
-
-                this.mainImageIndex = 0;
-            } else {
-                this.mainImage.insertBefore(this.divsElement[--this.mainImageIndex - 1], this.mainImage.childNodes[0]);
-
-                setTimeout(() => {
-                    this.divsElement[this.mainImageIndex - 1].appendChild(this.imagesElement[this.mainImageIndex - 1]);
-                    this.divsElement[this.mainImageIndex - 1].style.opacity = "1";
-                    this.divsElement[this.mainImageIndex].style.opacity = "1";
-                }, 1);
-
-                this.addTransition(this.divsElement[this.mainImageIndex + 1], 0);
+            if(this.draggable) {
+                this.cursorStyleWithTransition();
             }
 
-            if(this.mainImage.children.length > 3 && this.mainImage.lastChild?.firstChild){
-                this.removeTransition(this.mainImage.lastChild as HTMLElement);
-                this.mainImage.lastChild.removeChild(this.mainImage.lastChild.firstChild);
-                this.mainImage.removeChild(this.mainImage.lastChild);
-            }
+            this.addTransition(this.previousContainer, 1);
+            this.addTransition(this.currentContainer, 0);
 
-            this.$emit("changed-slider-image", this.mainImageIndex === - 1 ? this.images.length - 1 : this.mainImageIndex);
+            this.$nextTick(() => {
+                this.$emit("changed-slider-image");
+            });
             this.$emit("disable-arrow");
         }
     }
 
-    goToIndex(index: number): void {
+    goToIndex(): void {
         if(this.transitionEnded) {
             this.transitionEnded = false;
-            this.occuringInterval = false;
             this.stopInterval();
 
-            if(index - 1 === this.mainImageIndex) {
-                index === this.images.length - 1
-                    ? this.mainImage.appendChild(this.divsElement[0])
-                    : this.mainImage.appendChild(this.divsElement[index + 1]);
+            this.setElementChild(this.nextContainer, this.selectedIndex, 0);
 
-                setTimeout(() => {
-                    index === this.images.length - 1
-                        ? this.divsElement[0].appendChild(this.imagesElement[0])
-                        : this.divsElement[index + 1].appendChild(this.imagesElement[index + 1]);
-                }, 1);
-
-                if(this.divsElement[index].style.opacity >= "1") {
-                    this.transitionEnded = true;
-                } else {
-                    this.addTransition(this.divsElement[index], 1);
-                }
-
-                if(this.mainImage.firstChild?.firstChild){
-                    this.removeTransition(this.mainImage.firstChild as HTMLElement);
-                    this.mainImage.firstChild.removeChild(this.mainImage.firstChild.firstChild);
-                    this.mainImage.removeChild(this.mainImage.firstChild);
-                }
-            } else if(index + 1 === this.mainImageIndex) {
-                index === 0
-                    ? this.mainImage.insertBefore(this.divsElement[this.images.length - 1], this.mainImage.childNodes[0])
-                    : this.mainImage.insertBefore(this.divsElement[index - 1], this.mainImage.childNodes[0]);
-
-                setTimeout(() => {
-                    index === 0
-                        ? this.divsElement[this.images.length - 1].appendChild(this.imagesElement[this.images.length - 1])
-                        : this.divsElement[index - 1].appendChild(this.imagesElement[index - 1]);
-                }, 1);
-
-                index === 0
-                    ? this.divsElement[this.images.length - 1].style.opacity = "1"
-                    : this.divsElement[index - 1].style.opacity = "1";
-
-                this.divsElement[index].style.opacity = "1";
-                this.addTransition(this.divsElement[this.mainImageIndex], 0);
-
-                if(this.mainImage.lastChild?.firstChild){
-                    this.removeTransition(this.mainImage.lastChild as HTMLElement);
-                    this.mainImage.lastChild.removeChild(this.mainImage.lastChild.firstChild);
-                    this.mainImage.removeChild(this.mainImage.lastChild);
-                }
-            } else {
-                const mainImageFirstChild: ChildNode | null = this.mainImage.firstChild;
-                const mainImageLastChild: ChildNode | null = this.mainImage.lastChild;
-
-                if(mainImageFirstChild?.firstChild && mainImageFirstChild !== this.divsElement[this.mainImageIndex]){
-                    this.removeTransition(mainImageFirstChild as HTMLElement);
-                    mainImageFirstChild.removeChild(mainImageFirstChild.firstChild);
-                    this.mainImage.removeChild(mainImageFirstChild);
-                }
-
-                if(mainImageLastChild?.firstChild && mainImageLastChild !== this.divsElement[this.mainImageIndex]){
-                    this.removeTransition(mainImageLastChild as HTMLElement);
-                    mainImageLastChild.removeChild(mainImageLastChild.firstChild);
-                    this.mainImage.removeChild(mainImageLastChild);
-                }
-
-                if(this.mainImage.children.length > 1) {
-                    if(this.mainImage.firstChild !== this.divsElement[this.mainImageIndex] && this.mainImage.firstChild?.firstChild) {
-                        this.removeTransition(this.mainImage.firstChild as HTMLElement);
-                        this.mainImage.firstChild.removeChild(this.mainImage.firstChild.firstChild);
-                        this.mainImage.removeChild(this.mainImage.firstChild);
-                    } else if(this.mainImage.lastChild !== this.divsElement[this.mainImageIndex] && this.mainImage.lastChild?.firstChild) {
-                        this.removeTransition(this.mainImage.lastChild as HTMLElement);
-                        this.mainImage.lastChild.removeChild(this.mainImage.lastChild.firstChild);
-                        this.mainImage.removeChild(this.mainImage.lastChild);
-                    }
-                }
-
-
-                index === 0
-                    ? this.mainImage.insertBefore(this.divsElement[this.images.length - 1], this.mainImage.childNodes[0])
-                    : this.mainImage.insertBefore(this.divsElement[index - 1], this.mainImage.childNodes[0]);
-
-                this.mainImage.insertBefore(this.divsElement[index], this.mainImage.childNodes[1]);
-
-                index === this.images.length - 1
-                    ? this.mainImage.insertBefore(this.divsElement[0], this.mainImage.childNodes[2])
-                    : this.mainImage.insertBefore(this.divsElement[index + 1], this.mainImage.childNodes[2]);
-
-                setTimeout(() => {
-                    index === 0
-                        ? this.divsElement[this.images.length - 1].appendChild(this.imagesElement[this.images.length - 1])
-                        : this.divsElement[index - 1].appendChild(this.imagesElement[index - 1]);
-
-                    this.divsElement[index].appendChild(this.imagesElement[index]);
-
-                    index === this.images.length - 1
-                        ? this.divsElement[0].appendChild(this.imagesElement[0])
-                        : this.divsElement[index + 1].appendChild(this.imagesElement[index + 1]);
-                }, 1);
-
-                index === 0
-                    ? this.divsElement[this.images.length - 1].style.opacity = "1"
-                    : this.divsElement[index - 1].style.opacity = "1";
-
-                this.divsElement[index].style.opacity = "1";
-
-                if(this.divsElement[index] !== this.divsElement[this.mainImageIndex]) {
-                    this.addTransition(this.divsElement[this.mainImageIndex], 0);
-                }
-            }
-
-            this.mainImageIndex = index;
+            this.addTransition(this.nextContainer, 1);
         }
     }
 
-    selectedChanging(position: number, selectedItemIndex: number): void {
-        if(Math.trunc(position) < this.images.length - 1) {
-            if(Math.trunc(position) + 1 > 0) {
-                if(Math.trunc(position) === 0 && !this.divsElement[0].firstChild) {
-                    this.mainImage.insertBefore(this.divsElement[0], this.mainImage.childNodes[1]);
-                    this.divsElement[0].style.opacity = "1";
+    selectedChanging(percentageMoved: number): void {
+        this.cursorStyleWithoutTransition();
+        this.mouseMoved = true;
 
-                    if(this.mainImage.children.length > 3 && this.mainImage.lastChild?.firstChild) {
-                        this.removeTransition(this.mainImage.lastChild as HTMLElement);
-                        this.mainImage.lastChild?.removeChild(this.mainImage.lastChild.firstChild);
-                        this.mainImage.removeChild(this.mainImage.lastChild);
-                    }
+        if(percentageMoved >= 0 && percentageMoved <= 100) {
+            const floatIndex: number = percentageMoved / (100 / (this.images.length - 1));
+            const firstChildIndex: number = Math.trunc(floatIndex) === 0 ? this.images.length - 1 : Math.trunc(floatIndex) - 1;
+            const lastChildIndex: number = Math.trunc(floatIndex) === this.images.length - 1 ? 0 : Math.trunc(floatIndex) + 1;
 
-                    setTimeout(() => {
-                        this.divsElement[0].appendChild(this.imagesElement[0]);
-                    }, 1);
-
-                    (this.mainImage.firstChild as HTMLElement).style.opacity = "0";
-                    (this.mainImage.lastChild as HTMLElement).style.opacity = "0";
-                }
-
-                this.divsElement[Math.trunc(position) + 1].style.opacity = `${position - Math.trunc(position)}`;
-            }
-        } else if(Math.trunc(position) === this.images.length - 1) {
-            if(!this.divsElement[this.images.length - 1].firstChild) {
-                this.mainImage.appendChild(this.divsElement[this.images.length - 1]);
-
-                if(this.mainImage.children.length > 3 && this.mainImage.firstChild?.firstChild) {
-                    this.removeTransition(this.mainImage.firstChild as HTMLElement);
-                    this.mainImage.firstChild?.removeChild(this.mainImage.firstChild.firstChild);
-                    this.mainImage.removeChild(this.mainImage.childNodes[0]);
-                }
-
-                setTimeout(() => {
-                    this.divsElement[this.images.length - 1].appendChild(this.imagesElement[this.images.length - 1]);
-                }, 1);
-            }
-            this.divsElement[this.images.length - 1].style.opacity = "1";
-        }
-
-        if(this.delayedPosition < 0) {
-            this.delayedPosition = Math.trunc(position);
-        }
-
-        if(this.delayedPosition < Math.trunc(position)) {
-            if(Math.trunc(position) === this.images.length - 1) {
-                this.mainImage.appendChild(this.divsElement[0]);
-
-                if(this.mainImage.firstChild?.firstChild && this.mainImage.children.length > 3) {
-                    this.removeTransition(this.mainImage.firstChild as HTMLElement);
-                    this.mainImage.firstChild?.removeChild(this.mainImage.firstChild.firstChild);
-                    this.mainImage.removeChild(this.mainImage.childNodes[0]);
-                }
-
-                setTimeout(() => {
-                    this.divsElement[0].appendChild(this.imagesElement[0]);
-                }, 1);
+            if(this.nextContainer.firstChild === this.imagesElement[Math.trunc(floatIndex)]) {
+                this.setElementChild(this.nextContainer, lastChildIndex, 0);
+                this.setElementChild(this.currentContainer, Math.trunc(floatIndex), 1);
+                this.setElementChild(this.previousContainer, firstChildIndex, 1);
             } else {
-                if(selectedItemIndex + 1 <= this.images.length - 1) {
-                    this.mainImage.appendChild(this.divsElement[selectedItemIndex + 1]);
-
-                    if(this.mainImage.firstChild?.firstChild && this.mainImage.children.length > 3) {
-                        this.removeTransition(this.mainImage.firstChild as HTMLElement);
-                        this.mainImage.firstChild?.removeChild(this.mainImage.firstChild.firstChild);
-                        this.mainImage.removeChild(this.mainImage.childNodes[0]);
-                    }
-
-                    setTimeout(() => {
-                        this.divsElement[selectedItemIndex + 1].appendChild(this.imagesElement[selectedItemIndex + 1]);
-                    }, 1);
-                }
+                this.setElementChild(this.previousContainer, firstChildIndex, 1);
+                this.setElementChild(this.currentContainer, Math.trunc(floatIndex), 1);
+                this.setElementChild(this.nextContainer, lastChildIndex, 0);
             }
 
-            this.delayedPosition = Math.trunc(position);
-        } else if(this.delayedPosition > Math.trunc(position)) {
-            if(selectedItemIndex < this.images.length - 1) {
-                if(selectedItemIndex > 0) {
-                    this.mainImage.insertBefore(this.divsElement[selectedItemIndex - 1], this.mainImage.childNodes[0])
-
-                    if(this.mainImage.lastChild?.firstChild && this.mainImage.children.length > 3) {
-                        this.removeTransition(this.mainImage.lastChild as HTMLElement);
-                        this.mainImage.lastChild.removeChild(this.mainImage.lastChild.firstChild);
-                        this.mainImage.removeChild(this.mainImage.lastChild);
-                    }
-
-                    setTimeout(() => {
-                        this.divsElement[selectedItemIndex - 1].appendChild(this.imagesElement[selectedItemIndex - 1]);
-                        this.divsElement[selectedItemIndex - 1].style.opacity = "1";
-                    }, 1);
-                }
-            } else if(selectedItemIndex === this.images.length - 1){
-                if(!this.divsElement[selectedItemIndex - 1].firstChild) {
-                    if(this.mainImage.firstChild?.firstChild && this.mainImage.children.length > 3) {
-                        this.removeTransition(this.mainImage.lastChild as HTMLElement);
-                        this.mainImage.firstChild.removeChild(this.mainImage.firstChild.firstChild);
-                        this.mainImage.removeChild(this.mainImage.firstChild);
-                    }
-
-                    this.mainImage.insertBefore(this.divsElement[selectedItemIndex - 1], this.mainImage.childNodes[0]);
-
-                    setTimeout(() => {
-                        this.divsElement[selectedItemIndex - 1].appendChild(this.imagesElement[selectedItemIndex - 1]);
-                        this.divsElement[selectedItemIndex - 1].style.opacity = "1";
-                    }, 1);
-                }
-            }
-
-            this.delayedPosition = Math.trunc(position);
-        } else if(position <= 0) {
-            this.mainImage.insertBefore(this.divsElement[this.images.length - 1], this.mainImage.childNodes[0])
-
-            if(this.mainImage.lastChild?.firstChild && this.mainImage.children.length > 3) {
-                this.removeTransition(this.mainImage.lastChild as HTMLElement);
-                this.mainImage.lastChild.removeChild(this.mainImage.lastChild.firstChild);
-                this.mainImage.removeChild(this.mainImage.lastChild);
-            }
-
-            setTimeout(() => {
-                this.divsElement[this.images.length - 1].appendChild(this.imagesElement[this.images.length - 1]);
-            }, 1);
+            this.nextContainer.style.opacity = `${floatIndex - Math.trunc(floatIndex)}`;
         }
-
-        this.mainImageIndex = selectedItemIndex;
     }
 
-    selectedChanged(index: number): void {
-        this.occuringInterval = false;
-        this.delayedPosition = -1;
-
-        if(this.divsElement[index] === this.mainImage.lastChild) {
-            if(this.mainImage.firstChild?.firstChild && this.mainImage.children.length > 3) {
-                this.removeTransition(this.mainImage.firstChild as HTMLElement);
-                this.mainImage.firstChild?.removeChild(this.mainImage.firstChild.firstChild);
-                this.mainImage.removeChild(this.mainImage.childNodes[0]);
-            }
-
-            if(index === this.images.length - 1) {
-                this.mainImage.appendChild(this.divsElement[0]);
-                this.removeTransitionButOpacity(this.divsElement[0]);
-
-                setTimeout(() => {
-                    this.divsElement[0].appendChild(this.imagesElement[0]);
-                }, 1);
+    setElementChild(element: HTMLElement, index: number, opacity: number): void {
+        if(element.firstChild !== this.imagesElement[index]) {
+            element.style.opacity = "0";
+            if(element.firstChild) {
+                element.replaceChild(this.imagesElement[index], element.firstChild);
             } else {
-                this.mainImage.appendChild(this.divsElement[index + 1]);
-                this.removeTransitionButOpacity(this.divsElement[index + 1]);
-
-                setTimeout(() => {
-                    this.divsElement[index + 1].appendChild(this.imagesElement[index + 1]);
-                }, 1);
+                element.appendChild(this.imagesElement[index]);
             }
+            element.style.opacity = `${opacity}`;
+        }
+    }
 
-            if(this.mainImage.firstChild?.firstChild && this.mainImage.children.length > 3) {
-                this.removeTransition(this.mainImage.firstChild as HTMLElement);
-                this.mainImage.firstChild?.removeChild(this.mainImage.firstChild.firstChild);
-                this.mainImage.removeChild(this.mainImage.childNodes[0]);
-            }
+    selectedChanged(): void {
+        this.transitionEnded = false;
+        this.mouseMoved = false;
 
-            if(index === 0) {
-                if(this.mainImage.firstChild !== this.divsElement[this.images.length - 1] && this.mainImage.firstChild?.firstChild) {
-                    this.removeTransition(this.mainImage.firstChild as HTMLElement);
-                    this.mainImage.firstChild?.removeChild(this.mainImage.firstChild.firstChild);
-                    this.mainImage.removeChild(this.mainImage.childNodes[0]);
-
-                    this.mainImage.insertBefore(this.divsElement[this.images.length - 1], this.mainImage.childNodes[0]);
-
-                    setTimeout(() => {
-                        this.divsElement[this.images.length - 1].appendChild(this.imagesElement[this.images.length - 1]);
-                    }, 1);
-                }
-            } else if(index > 0) {
-                if(this.mainImage.firstChild !== this.divsElement[index - 1] && this.mainImage.firstChild?.firstChild) {
-                    this.removeTransition(this.mainImage.firstChild as HTMLElement);
-                    this.mainImage.firstChild?.removeChild(this.mainImage.firstChild.firstChild);
-                    this.mainImage.removeChild(this.mainImage.childNodes[0]);
-
-                    this.mainImage.insertBefore(this.divsElement[index - 1], this.mainImage.childNodes[0]);
-
-                    setTimeout(() => {
-                        this.divsElement[index - 1].appendChild(this.imagesElement[index - 1]);
-                    }, 1);
-                }
-            }
-
-            index === 0 ? this.divsElement[this.images.length - 1].style.opacity = "1" : this.divsElement[index - 1].style.opacity = "1";
-        } else if(this.divsElement[index] === this.mainImage.firstChild) {
-            if(this.mainImage.lastChild?.firstChild && this.mainImage.children.length > 3) {
-                this.removeTransition(this.mainImage.lastChild as HTMLElement);
-                this.mainImage.lastChild.removeChild(this.mainImage.lastChild.firstChild);
-                this.mainImage.removeChild(this.mainImage.lastChild);
-            }
-
-            if(index === 0) {
-                this.mainImage.insertBefore(this.divsElement[this.images.length - 1], this.mainImage.childNodes[0])
-
-                setTimeout(() => {
-                    this.divsElement[this.images.length - 1].appendChild(this.imagesElement[this.images.length - 1]);
-                    this.divsElement[this.images.length - 1].style.opacity = "1";
-                }, 1);
+        if(this.nextContainer.firstChild !== this.imagesElement[this.selectedIndex]) {
+            if(this.currentContainer.style.opacity === "1" && this.nextContainer.style.opacity === "0") {
+                this.onTransitionEnd();
             } else {
-                this.mainImage.insertBefore(this.divsElement[index - 1], this.mainImage.childNodes[0])
-
-                setTimeout(() => {
-                    this.divsElement[index - 1].appendChild(this.imagesElement[index - 1]);
-                    this.divsElement[index - 1].style.opacity = "1";
-                }, 1);
-            }
-
-            for(let image: number = 0; image < this.mainImage.children.length - 3; image++) {
-                if(this.mainImage.lastChild?.firstChild) {
-                    this.removeTransition(this.mainImage.lastChild as HTMLElement);
-                    this.mainImage.lastChild.removeChild(this.mainImage.lastChild.firstChild);
-                    this.mainImage.removeChild(this.mainImage.lastChild);
-                }
-            }
-
-            const nextImage: number = index === this.images.length - 1 ? 0 : index + 1;
-
-            if(this.divsElement[nextImage] !== this.mainImage.lastChild && this.mainImage.lastChild?.firstChild) {
-                this.removeTransition(this.mainImage.lastChild as HTMLElement);
-                this.mainImage.lastChild.removeChild(this.mainImage.lastChild.firstChild);
-                this.mainImage.removeChild(this.mainImage.lastChild);
-
-                this.mainImage.appendChild(this.divsElement[nextImage]);
-                this.removeTransition(this.divsElement[nextImage]);
-
-                setTimeout(() => {
-                    this.divsElement[nextImage].appendChild(this.imagesElement[nextImage]);
-                }, 1);
+                this.addTransition(this.currentContainer, 1);
+                this.addTransition(this.nextContainer, 0);
             }
         } else {
-            const beforeIndex: number = index === 0 ? this.images.length - 1 : index - 1;
-            const nextIndex: number = index === this.images.length - 1 ? 0 : index + 1;
-
-            this.divsElement[beforeIndex].style.opacity = "1";
-
-            if(!this.divsElement[index].firstChild) {
-                this.removeTransition(this.divsElement[index]);
-                this.divsElement[index].style.opacity = "1";
-
-                if(this.mainImage.children[1] === this.divsElement[index]) {
-                    setTimeout(() => {
-                        this.divsElement[index].appendChild(this.imagesElement[index]);
-                    }, 1);
-                }
-                else {
-                    if(this.mainImage.children.length > 2 && this.mainImage.lastChild?.firstChild) {
-                        this.removeTransition(this.mainImage.lastChild as HTMLElement);
-                        this.mainImage.lastChild.removeChild(this.mainImage.lastChild.firstChild);
-                        this.mainImage.removeChild(this.mainImage.lastChild);
-                    }
-
-                    this.mainImage.insertBefore(this.divsElement[index], this.mainImage.childNodes[1]);
-
-                    setTimeout(() => {
-                        this.divsElement[index].appendChild(this.imagesElement[index]);
-                    }, 1);
-                }
-            }
-
-            if(!this.divsElement[beforeIndex].firstChild || this.mainImage.firstChild !== this.divsElement[beforeIndex]) {
-                this.removeTransitionButOpacity(this.divsElement[beforeIndex]);
-
-                if(this.mainImage.firstChild === this.divsElement[beforeIndex]) {
-                    setTimeout(() => {
-                        this.divsElement[beforeIndex].appendChild(this.imagesElement[beforeIndex]);
-                        this.divsElement[beforeIndex].style.opacity = "1";
-                    }, 1);
-                } else {
-                    if(this.mainImage.firstChild?.firstChild) {
-                        this.removeTransition(this.mainImage.firstChild as HTMLElement);
-                        this.mainImage.firstChild.removeChild(this.mainImage.firstChild.firstChild);
-                        this.mainImage.removeChild(this.mainImage.firstChild);
-                    }
-
-                    this.mainImage.insertBefore(this.divsElement[beforeIndex], this.mainImage.childNodes[0])
-
-                    setTimeout(() => {
-                        this.divsElement[beforeIndex].appendChild(this.imagesElement[beforeIndex]);
-                        this.divsElement[beforeIndex].style.opacity = "1";
-                    }, 1);
-                }
-            }
-
-            if(!this.divsElement[nextIndex].firstChild || this.mainImage.lastChild !== this.divsElement[nextIndex]) {
-
-                this.removeTransition(this.divsElement[nextIndex]);
-
-                if(this.mainImage.lastChild === this.divsElement[nextIndex]) {
-                    setTimeout(() => {
-                        this.divsElement[nextIndex].appendChild(this.imagesElement[nextIndex]);
-                    }, 1);
-                } else {
-                    if(this.mainImage.lastChild?.firstChild) {
-                        this.removeTransition(this.mainImage.lastChild as HTMLElement);
-                        this.mainImage.lastChild.removeChild(this.mainImage.lastChild.firstChild);
-                        this.mainImage.removeChild(this.mainImage.lastChild);
-                    }
-
-                    this.mainImage.appendChild(this.divsElement[nextIndex]);
-
-                    setTimeout(() => {
-                        this.divsElement[nextIndex].appendChild(this.imagesElement[nextIndex]);
-                    }, 1);
-                }
+            if(this.nextContainer.style.opacity === "1") {
+                this.onTransitionEnd();
+            } else {
+                this.addTransition(this.nextContainer, 1);
             }
         }
-
-        if(this.divsElement[index].style.opacity === "1" && (this.mainImage.lastChild as HTMLElement).style.opacity <= "0") {
-            this.addInterval();
-        }
-
-        if(this.divsElement[index].style.opacity < "1") {
-            this.addTransition(this.divsElement[index], 1);
-        }
-
-        if(this.divsElement[index] !== this.mainImage.lastChild && (this.mainImage.lastChild as HTMLElement).style.opacity > "0") {
-            this.addTransition(this.mainImage.lastChild as HTMLElement, 0);
-        }
-
-        this.mainImageIndex = index;
     }
 
     addTransition(element: HTMLElement, opacity: number): void {
@@ -741,12 +332,24 @@ export default class Slider extends Vue{
     removeTransition(element: HTMLElement): void {
         element.style.transition = "none";
         element.style.transitionDuration = "0s";
-        element.style.opacity = "0";
     }
 
-    removeTransitionButOpacity(element: HTMLElement): void {
-        element.style.transition = "none";
-        element.style.transitionDuration = "0s";
+    cursorStyleWithTransition(): void {
+        (this.$el as HTMLElement).style.cursor = "not-allowed";
+        document.getElementsByTagName("body")[0].style.cursor = "default";
+        ((this.$el as HTMLElement).firstElementChild as HTMLElement).style.pointerEvents = "none";
+    }
+
+    cursorStyleWithoutTransition(): void {
+        (this.$el as HTMLElement).style.cursor = "grabbing";
+        document.getElementsByTagName("body")[0].style.cursor = "grabbing";
+        ((this.$el as HTMLElement).firstElementChild as HTMLElement).style.pointerEvents = "auto";
+    }
+
+    cursorStyleAfterTransition(): void {
+        (this.$el as HTMLElement).style.cursor = "grab";
+        document.getElementsByTagName("body")[0].style.cursor = "default";
+        ((this.$el as HTMLElement).firstElementChild as HTMLElement).style.pointerEvents = "auto";
     }
 
     addInterval(): void {
@@ -762,6 +365,7 @@ export default class Slider extends Vue{
 
     stopInterval(): void {
         clearInterval(this.changeImageInterval);
+        this.occuringInterval = false;
         if(this.emitStopInterval) {
             this.$emit("stop-interval", this.transitionDuration);
         }

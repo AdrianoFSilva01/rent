@@ -1,6 +1,8 @@
 <template>
-    <div class="w-full h-full select-none">
-        <div ref="mainImage" v-bind="$attrs" :onmousedown="draggable ? onMouseDown : null" />
+    <div class="w-full h-full select-none" v-bind="$attrs" :onmousedown="draggable ? onMouseDown : null">
+        <div ref="previousContainer" />
+        <div ref="currentContainer" />
+        <div ref="nextContainer" />
     </div>
 </template>
 

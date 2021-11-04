@@ -56,6 +56,7 @@ export default class Main<T> extends Vue{
     disableNextActivityCarouselButton: boolean = false;
     disablePreviousActivityCarouselButton: boolean = false;
 
+    imagesSlider: number = 0;
     images: Array<string> = ["https://magazine.luxevile.com/wp-content/uploads/2015/03/CasasDeLuxo16.jpg",
         "https://executivedigest.sapo.pt/wp-content/uploads/2019/08/92864803.jpg",
         "https://st3.idealista.pt/news/arquivos/2019-08/casa_frente_mar_2027.jpg?sv=G3jgYicU"];
@@ -72,18 +73,11 @@ export default class Main<T> extends Vue{
         ["Mountain Biking", "https://www.wallpapers13.com/wp-content/uploads/2020/02/With-Bicycle-all-over-the-world-Mountain-bike-trails-4K-ultra-HD-Wallpaper-1920x1080.jpg"],
         ["Climbing", "https://www.pixel4k.com/wp-content/uploads/2018/10/girl-mountain-climber-5k_1538786999.jpg"],
         ["Golf", "https://i.pinimg.com/originals/c6/ca/1f/c6ca1f1c86f0c6c037a38df6b3754be2.jpg"],
-        ["Jeep Tours", "https://adrenalineportugal.com/wp-content/uploads/2020/02/Our-fun-filled-Arrabida-Jeep-Tour.jpg"],
+        ["Jeep Tours", "https://wallpapercrafter.com/desktop/251272-jeep-4x4-sun-flare-and-off-road-hd.jpg"],
         ["Sup Tours", "https://www.seabookings.com/photos/original/5969-sup-tours-in-benagil-1594651553-jpg"],
         ["Surf", "https://wallpaperaccess.com/full/1303332.jpg"]];
-    activitiesImages: Array<string>  = ["https://wallpaperaccess.com/full/428865.jpg",
-        "https://www.wallpapers13.com/wp-content/uploads/2020/02/With-Bicycle-all-over-the-world-Mountain-bike-trails-4K-ultra-HD-Wallpaper-1920x1080.jpg",
-        "https://www.pixel4k.com/wp-content/uploads/2018/10/girl-mountain-climber-5k_1538786999.jpg",
-        "https://i.pinimg.com/originals/c6/ca/1f/c6ca1f1c86f0c6c037a38df6b3754be2.jpg",
-        "https://adrenalineportugal.com/wp-content/uploads/2020/02/Our-fun-filled-Arrabida-Jeep-Tour.jpg",
-        "https://www.seabookings.com/photos/original/5969-sup-tours-in-benagil-1594651553-jpg",
-        "https://wallpaperaccess.com/full/1303332.jpg"];
-    activitiesCarouselIndex: number = 0;
-    activityCarouselBeingDragged: boolean = false;
+    activitiesImages: Array<string>  = [];
+    activitiesIndex: number = 0;
     unableToChangeSliderOpacity: boolean = false;
 
     get carouselItems(): Rooms {
@@ -138,6 +132,12 @@ export default class Main<T> extends Vue{
         }
     }
 
+    beforeMount(): void {
+        for(const image of this.activities) {
+            this.activitiesImages.push(image[1]);
+        }
+    }
+
     reset(): void {
         this.datePicker.reset();
     }
@@ -162,8 +162,8 @@ export default class Main<T> extends Vue{
         this.carousel.previousItem();
     }
 
-    changedActivitySliderImage(index: number): void {
-        this.activityCarousel.AlignByIndex(index);
+    changedActivitySliderImage(): void {
+        this.activityCarousel.selectedChanged();
         this.disableNextActivityCarouselButton = true;
         this.disablePreviousActivityCarouselButton = true;
     }
@@ -175,12 +175,12 @@ export default class Main<T> extends Vue{
 
     nextActivityCarouselItem(clicked: boolean): void {
         this.activitySlider.nextImage(clicked);
-        this.activityCarousel.nextItem();
+        // this.activityCarousel.nextItem();
     }
 
     previousActivityCarouselItem(): void {
         this.activitySlider.previousImage();
-        this.activityCarousel.previousItem();
+        // this.activityCarousel.previousItem();
     }
 
     stopSliderInterval(): void {
@@ -192,40 +192,33 @@ export default class Main<T> extends Vue{
         this.activitySlider.addInterval();
     }
 
-    selectedChanged(selected: number): void {
-        this.activitySlider.goToIndex(selected);
+    selectedChanged(): void {
+        this.activitySlider.goToIndex();
     }
 
     activitySliderMouseDown(): void {
         this.activityCarousel.transitionEnded = false;
     }
 
-    activitySliderMouseMoving(sliderClientX: number, changeOpacityMargin: number): void {
-        this.activityCarousel.selectedChanged(
-            (sliderClientX * this.activityCarousel.childElementWidth) / this.activitySliderContainer.clientWidth,
-            (changeOpacityMargin * this.activityCarousel.childElementWidth) / this.activitySliderContainer.clientWidth
-        );
+    activitySliderMouseMoving(sliderClientX: number): void {
+        this.activityCarousel.selectedChanging(sliderClientX);
     }
 
     activitySliderMouseUp(addSliderInterval: boolean): void {
-        this.activityCarousel.AlignByIndex(this.activityCarousel.selectedItemIndex);
         this.activityCarousel.addSliderInterval = addSliderInterval;
+        this.activityCarousel.selectedChanged();
     }
 
-    activityCarouselMouseMoving(carouselClientX: number, selectedItemIndex: number): void {
-        this.activitySlider.selectedChanging(carouselClientX / this.activityCarousel.childElementWidth, selectedItemIndex);
+    activityCarouselMouseMoving(carouselClientX: number): void {
+        this.activitySlider.selectedChanging(carouselClientX);
     }
 
-    activityCarouselMouseUp(index: number): void {
-        this.activitySlider.selectedChanged(index);
+    activityCarouselMouseUp(): void {
+        this.activitySlider.selectedChanged();
     }
 
-    activitySliderMoving(sliderWidth: number, mouseX: number): void {
-        this.activityCarousel.move((mouseX * this.activityCarouselItem.offsetWidth) / sliderWidth);
-    }
-
-    activityCarouselAlignItems(index: number): void {
-        this.activityCarousel.alignItems(index);
+    activitySliderNoTransitionMade(): void {
+        this.activityCarousel.transitionEnded = true;
     }
 
     disableSliderArrow(): void {
