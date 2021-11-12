@@ -1,8 +1,12 @@
 input {
-    @apply border-b border-white border-opacity-50 outline-none bg-transparent text-white;
+    @apply border-b border-opacity-50 outline-none bg-transparent text-white;
 
     &::placeholder {
         @apply text-white;
+    }
+
+    &:focus + #underline {
+        @apply w-full;
     }
 }
 

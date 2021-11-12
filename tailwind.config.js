@@ -71,7 +71,8 @@ module.exports = {
         extend: {
             borderWidth: ['first', 'last', 'hover'],
             opacity: ['first'],
-            margin: ['last']
+            margin: ['last'],
+            width: ['focus']
         }
     },
     plugins: [

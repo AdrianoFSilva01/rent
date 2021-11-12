@@ -1,19 +1,13 @@
-import { Vue } from "vue-class-component";
-import { Prop, Ref } from "vue-property-decorator";
+import { Options, Vue } from "vue-class-component";
+import { ModelSync, Prop, Ref } from "vue-property-decorator";
 
+@Options({
+    emits: ["update:modelValue"]
+})
 export default class UnderlineInputAnimated extends Vue {
+    @ModelSync("modelValue", "update:modelValue") inputText!: string;
     @Prop({required: true}) placeholderText!: string;
+    @Prop() inputStyle!: string;
+    @Prop() underlineStyle!: string;
     @Ref() underline!: HTMLElement;
-
-    underlineFull(): void {
-        this.underline.classList.remove("w-0");
-        this.underline.classList.add("w-full");
-        this.underline.classList.add("noHover");
-    }
-
-    underlineNone(): void {
-        this.underline.classList.remove("noHover");
-        this.underline.classList.remove("w-full");
-        this.underline.classList.add("w-0");
-    }
 }
