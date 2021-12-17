@@ -32,7 +32,7 @@ import { Ref, Watch } from "vue-property-decorator";
         SelectedPositionCarousel
     }
 })
-export default class Main<T> extends Vue{
+export default class Main<T> extends Vue {
     @Ref() slider!: SliderTs;
     @Ref() datePicker!: DatePickerTs;
     @Ref() datePickerUntil!: DatePickerTs;
@@ -73,7 +73,7 @@ export default class Main<T> extends Vue{
         ["Mountain Biking", "https://www.wallpapers13.com/wp-content/uploads/2020/02/With-Bicycle-all-over-the-world-Mountain-bike-trails-4K-ultra-HD-Wallpaper-1920x1080.jpg"],
         ["Climbing", "https://www.pixel4k.com/wp-content/uploads/2018/10/girl-mountain-climber-5k_1538786999.jpg"],
         ["Golf", "https://i.pinimg.com/originals/c6/ca/1f/c6ca1f1c86f0c6c037a38df6b3754be2.jpg"],
-        ["Jeep Tours", "https://wallpapercrafter.com/desktop/251272-jeep-4x4-sun-flare-and-off-road-hd.jpg"],
+        ["Jeep Tours", "https://www.speednik.com/wp-content/blogs.dir/1/files/2021/03/jeep-rolls-out-seven-sweet-concepts-for-easter-jeep-safari-2021-2021-03-30_19-24-21_705998.jpg"],
         ["Sup Tours", "https://www.seabookings.com/photos/original/5969-sup-tours-in-benagil-1594651553-jpg"],
         ["Surf", "https://wallpaperaccess.com/full/1303332.jpg"]];
     activitiesImages: Array<string>  = [];
