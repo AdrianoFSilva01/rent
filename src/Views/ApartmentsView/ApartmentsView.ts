@@ -8,8 +8,8 @@ import { Ref } from "vue-property-decorator";
     }
 })
 export default class ApartmentsView extends Vue {
-    @Ref() roomsList: HTMLElement | undefined;
-    @Ref() roomDisplay: HTMLElement | undefined;
+    @Ref() roomsList!: HTMLElement;
+    roomDisplay: HTMLElement | undefined;
 
     houses: Array<Array<string>> = [
         ["https://hipercentrodomovel.pt/wp-content/uploads/2019/06/QUCfoloBCFC003creta.jpg", "Deluxe Appartement", "max. 6 Persons", "approx. 70m²", "from 249€",
@@ -29,15 +29,17 @@ export default class ApartmentsView extends Vue {
     spaceBetweenRooms: number = 0;
 
     mounted(): void {
+        this.roomDisplay = this.roomsList.lastElementChild as HTMLElement;
+
         if(this.roomsList && this.roomDisplay) {
             this.spaceBetweenRooms = (this.roomsList.offsetHeight - (this.houses.length * this.roomDisplay.offsetHeight)) / (this.houses.length - 1);
         }
 
         document.addEventListener("scroll", () => {
             if(this.roomsList && this.roomDisplay) {
-                const scrollBetweenRooms: boolean = pageYOffset >= this.roomsList.offsetTop && pageYOffset <= this.roomsList.offsetTop + this.roomsList.offsetHeight;
+                const scrollBetweenRooms: boolean = scrollY >= this.roomsList.offsetTop && scrollY <= this.roomsList.offsetTop + this.roomsList.offsetHeight;
                 if(scrollBetweenRooms) {
-                    this.scrollPosition = pageYOffset - this.roomsList.offsetTop;
+                    this.scrollPosition = scrollY - this.roomsList.offsetTop;
                     if(this.scrollPosition < this.roomDisplay.offsetHeight) {
                         this.selectedIndex = 0;
                     } else {
