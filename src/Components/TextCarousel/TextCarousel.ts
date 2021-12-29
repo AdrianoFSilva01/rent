@@ -1,11 +1,10 @@
 import { Options, Vue } from "vue-class-component";
-import { Prop, Ref } from "vue-property-decorator";
+import { Prop } from "vue-property-decorator";
 
 @Options({
     emits: ["selected-text-carousel"]
 })
 export default class TextCarousel extends Vue{
-    @Ref() textElement!: HTMLElement;
     @Prop({ default: null}) texts!: Array<string>;
 
     textSelected: string | null = "";
@@ -15,7 +14,8 @@ export default class TextCarousel extends Vue{
     notSelectedElementOpacity: number = 0;
 
     mounted(): void {
-        for(const styleClass of this.textElement.classList) {
+        const style: DOMTokenList = (((this.$el as HTMLElement).nextElementSibling as HTMLElement).lastElementChild as HTMLElement).classList;
+        for(const styleClass of style) {
             if(styleClass.includes("opacity")) {
                 if(!this.notSelectedElementOpacity) {
                     this.notSelectedElementOpacity = parseInt(styleClass.split("-")[1]) / 100;
